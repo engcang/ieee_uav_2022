@@ -5,6 +5,7 @@ IEEE UAV Competition 2022 - Low Power Computer Vision Challenges (LPCVC): Chase
 
 ### Requirements
 <details><summary>[click to see]</summary>
+	
 + `OpenCV` version >= 4.4.0
 + `cv_bridge` with the corresponding `OpenCV`
 + `ROS` and `Gazebo`
@@ -68,5 +69,4 @@ $ roslaunch ieee_uav main.launch
 
 
 ### Components
-##### Object Detection
 + ROS-YOLO using `OpenCV` code: from [here (myself)](https://github.com/engcang/ros-yolo-sort/blob/master/YOLO_and_ROS_ver/ros_opencv_dnn.py)
