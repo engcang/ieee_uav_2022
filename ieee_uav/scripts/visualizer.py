@@ -32,7 +32,8 @@ class path_pub():
     def __init__(self):
         rospy.init_node('gt_path_pubb', anonymous=True)
         self.parent_frame_id = rospy.get_param("/parent_frame_id", 'map')
-        self.append_rate = rospy.get_param("/append_rate", 3)
+        self.append_rate = rospy.get_param("/append_rate", 5)
+        self.path_time = rospy.get_param("/path_time", 15)
         self.robot_name = "iris"
         self.target_name = "rover_moving"
 
@@ -79,6 +80,8 @@ if __name__ == '__main__':
                 path_pub_.robot_path.header.frame_id = path_pub_.parent_frame_id 
                 path_pub_.robot_path.header.stamp = rospy.Time.now()
                 path_pub_.gt_path_pub.publish(path_pub_.robot_path)
+                if len(path_pub_.robot_path.poses) > path_pub_.append_rate*path_pub_.path_time:
+                    del path_pub_.robot_path.poses[0]
             if path_pub_.target_check == 1:
                 pose = PoseStamped()
                 pose.pose = path_pub_.target_pose
@@ -88,6 +91,8 @@ if __name__ == '__main__':
                 path_pub_.target_path.header.frame_id = path_pub_.parent_frame_id 
                 path_pub_.target_path.header.stamp = rospy.Time.now()
                 path_pub_.gt_path_pub2.publish(path_pub_.target_path)
+                if len(path_pub_.target_path.poses) > path_pub_.append_rate*path_pub_.path_time:
+                    del path_pub_.target_path.poses[0]
             path_pub_.rate.sleep()
         except (rospy.ROSInterruptException, SystemExit, KeyboardInterrupt) :
             sys.exit(0)

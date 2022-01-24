@@ -6,8 +6,6 @@ Panels:
       Expanded:
         - /TF1/Frames1
         - /Octomap1/Autocompute Value Bounds1
-        - /Local_Best_path1/Status1
-        - /RGB-D depth1/Status1
         - /RGB-D depth1/Autocompute Value Bounds1
       Splitter Ratio: 0.6016042828559875
     Tree Height: 538
@@ -70,8 +68,6 @@ Visualization Manager:
         base_link:
           Value: true
         base_link_frd:
-          Value: false
-        d435i/camera_link:
           Value: false
         d435i/depth_camera_link:
           Value: false
@@ -292,25 +288,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 30.03627586364746
+      Distance: 23.26009178161621
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 3.5246076583862305
-        Y: 1.839903473854065
-        Z: 0.5088295340538025
+        X: -0.45557066798210144
+        Y: 5.105679988861084
+        Z: 0.5048641562461853
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.5397963523864746
+      Pitch: 1.5697963237762451
       Target Frame: map
       Value: Orbit (rviz)
-      Yaw: 3.3407955169677734
+      Yaw: 3.1507914066314697
     Saved: ~
 Window Geometry:
   Displays:

@@ -9,6 +9,7 @@ from tf.transformations import euler_from_quaternion
 from nav_msgs.msg import Odometry, Path
 from geometry_msgs.msg import TwistStamped, PoseStamped
 from std_msgs.msg import Bool
+from yolo_ros_simple.msg import bboxes
 
 import time
 import sys
@@ -35,11 +36,13 @@ class mpc_ctrl():
         rospy.init_node('mpc_controlelr', anonymous=True)
         self.pose_sub = rospy.Subscriber('/mavros/local_position/pose', PoseStamped, self.pose_cb)
         self.traj_sub = rospy.Subscriber('/best_path', Path, self.traj_cb)
+        self.bbox_sub = rospy.Subscriber('/bboxes', bboxes, self.bbox_cb)
         self.control_pub = rospy.Publisher('/mavros/setpoint_velocity/cmd_vel', TwistStamped, queue_size=2)
         self.rate = rospy.Rate(15)
         
         self.pose_in = False
         self.traj_in = False
+        self.bbox_in = False
 
         ### MPC setup
         self.horizon = 10
@@ -50,10 +53,10 @@ class mpc_ctrl():
         self.vx_max = 1.0
         self.vy_min = -1.0
         self.vy_max = 1.0
-        self.vz_min = -0.1
+        self.vz_min = -0.2
         self.vz_max = 0.2
-        self.w_min = -1.0
-        self.w_max = 1.0
+        self.w_min = -1.2
+        self.w_max = 1.2
         self.bounds = []
         for i in range(self.horizon):
             self.bounds += [[self.vx_min, self.vx_max]]
@@ -64,7 +67,7 @@ class mpc_ctrl():
 
         self.u = np.zeros(self.horizon*self.num_inputs)
 
-        self.position_weight = 1.0
+        self.position_weight = 3.0
         self.yaw_weight = 1.0
         self.input_weight = 0.5
         self.input_smoothness_weight = 2.0
@@ -100,9 +103,12 @@ class mpc_ctrl():
             curr_state = self.plant(prev_state, self.dt, u[i*self.num_inputs], u[i*self.num_inputs+1], u[i*self.num_inputs+2], u[i*self.num_inputs+3])
 
             #tracking cost
-            cost += self.position_weight * pow(curr_state[0]-ref[0], 2)
-            cost += self.position_weight * pow(curr_state[1]-ref[1], 2)
-            cost += self.position_weight * pow(curr_state[2]-ref[2], 2)
+            distance = pow(curr_state[0]-ref[0], 2) + pow(curr_state[1]-ref[1], 2) + pow(curr_state[2]-ref[2], 2)
+            if distance > 5:
+                cost += self.position_weight * (distance-5)
+            elif distance <= 5:
+                cost += self.position_weight * (5-distance)
+            # cost += self.position_weight * distance
             cost += self.yaw_weight * pow(rpy_saturation(curr_state[3]-ref[3]), 2)
 
             #input cost
@@ -131,6 +137,12 @@ class mpc_ctrl():
         z_t_1 = z_t + vz*dt
         yaw_t_1 = rpy_saturation(yaw_t + w*dt)
         return [x_t_1, y_t_1, z_t_1, yaw_t_1]
+
+    def bbox_cb(self, msg):
+        if len(msg.bboxes)>0:
+            box=msg.bboxes[0]
+            self.ibvs_yaw = (320-(box.x+box.width)/2) / 640*1.02974
+            self.bbox_in=True
 
 
 #######################################################################
@@ -163,7 +175,11 @@ if __name__ == '__main__':
                 solved_input.twist.linear.x = u_solution.x[0]
                 solved_input.twist.linear.y = u_solution.x[1]
                 solved_input.twist.linear.z = u_solution.x[2]
-                solved_input.twist.angular.z = u_solution.x[3]
+                if mpc_.bbox_in:
+                    solved_input.twist.angular.z = rpy_saturation(u_solution.x[3] + mpc_.ibvs_yaw*3)
+                    mpc_.bbox_in=False
+                else:
+                    solved_input.twist.angular.z = u_solution.x[3]
                 mpc_.control_pub.publish(solved_input)
 
                 toc = time.time()
