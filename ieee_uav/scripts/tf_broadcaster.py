@@ -16,7 +16,7 @@ signal.signal(signal.SIGINT, signal_handler)
 class caster():
     def __init__(self):
         rospy.init_node('tf_broadcaster', anonymous=True)
-        self.camera_link_name = rospy.get_param("/depth_base", 'd435i/camera_link')
+        self.camera_link_name = rospy.get_param("/depth_base", 'd435i/depth_camera_link')
         self.body_link_name = rospy.get_param("/body_base", 'base_link')
         self.pose_sub = rospy.Subscriber('/mavros/local_position/pose', PoseStamped, self.base_cb)
         self.rate = rospy.Rate(2)

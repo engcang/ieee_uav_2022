@@ -4,10 +4,11 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /Status1
+        - /TF1/Frames1
         - /Octomap1/Autocompute Value Bounds1
-        - /Peacock1/sec_bran_11/Namespaces1
-        - /Registered_pcl1/Autocompute Value Bounds1
+        - /Local_Best_path1/Status1
+        - /RGB-D depth1/Status1
+        - /RGB-D depth1/Autocompute Value Bounds1
       Splitter Ratio: 0.6016042828559875
     Tree Height: 538
   - Class: rviz/Selection
@@ -40,7 +41,7 @@ Visualization Manager:
       Cell Size: 3
       Class: rviz/Grid
       Color: 211; 215; 207
-      Enabled: false
+      Enabled: true
       Line Style:
         Line Width: 0.029999999329447746
         Value: Lines
@@ -53,99 +54,34 @@ Visualization Manager:
       Plane: XY
       Plane Cell Count: 20
       Reference Frame: <Fixed Frame>
-      Value: false
+      Value: true
+    - Class: rviz/Axes
+      Enabled: true
+      Length: 1
+      Name: Axes
+      Radius: 0.10000000149011612
+      Reference Frame: <Fixed Frame>
+      Value: true
     - Class: rviz/TF
       Enabled: true
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        LF_ADAPTER:
-          Value: false
-        LF_FOOT:
-          Value: false
-        LF_HIP:
-          Value: false
-        LF_SHANK:
-          Value: false
-        LF_THIGH:
-          Value: false
-        LH_ADAPTER:
-          Value: false
-        LH_FOOT:
-          Value: false
-        LH_HIP:
-          Value: false
-        LH_SHANK:
-          Value: false
-        LH_THIGH:
-          Value: false
-        RF_ADAPTER:
-          Value: false
-        RF_FOOT:
-          Value: false
-        RF_HIP:
-          Value: false
-        RF_SHANK:
-          Value: false
-        RF_THIGH:
-          Value: false
-        RH_ADAPTER:
-          Value: false
-        RH_FOOT:
-          Value: false
-        RH_HIP:
-          Value: false
-        RH_SHANK:
-          Value: false
-        RH_THIGH:
-          Value: false
-        base:
-          Value: false
-        base_body:
+        base_link:
           Value: true
-        base_inertia:
+        base_link_frd:
           Value: false
-        body:
+        d435i/camera_link:
           Value: false
-        camera_init:
-          Value: false
-        camera_link:
-          Value: false
-        d455/camera_link:
-          Value: false
-        imu_link:
-          Value: false
-        jackal/base_link:
-          Value: false
-        jackal/chassis_link:
-          Value: false
-        jackal/front_fender_link:
-          Value: false
-        jackal/front_left_wheel_link:
-          Value: false
-        jackal/front_mount:
-          Value: false
-        jackal/front_right_wheel_link:
-          Value: false
-        jackal/imu_link:
-          Value: false
-        jackal/mid_mount:
-          Value: false
-        jackal/rear_fender_link:
-          Value: false
-        jackal/rear_left_wheel_link:
-          Value: false
-        jackal/rear_mount:
-          Value: false
-        jackal/rear_right_wheel_link:
+        d435i/depth_camera_link:
           Value: false
         map:
           Value: true
-        os0_imu:
+        map_ned:
           Value: false
-        os0_lidar:
+        odom:
           Value: false
-        os0_sensor:
+        odom_ned:
           Value: false
       Marker Scale: 5
       Name: TF
@@ -154,12 +90,13 @@ Visualization Manager:
       Show Names: true
       Tree:
         map:
-          base_body:
-            d455/camera_link:
+          base_link:
+            base_link_frd:
               {}
-          camera_init:
-            body:
+            d435i/depth_camera_link:
               {}
+          map_ned:
+            {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -191,147 +128,15 @@ Visualization Manager:
       Use rainbow: true
       Value: false
     - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: -0.5
-        Min Value: 8.5
-        Value: false
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz/PointCloud2
-      Color: 0; 255; 217
-      Color Transformer: FlatColor
-      Decay Time: 0
-      Enabled: false
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Min Color: 0; 0; 0
-      Name: Octomap_empty
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.30000001192092896
-      Style: Boxes
-      Topic: /octomap_empty
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: false
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz/PointCloud2
-      Color: 0; 255; 145
-      Color Transformer: FlatColor
-      Decay Time: 0
-      Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Min Color: 0; 0; 0
-      Name: contact_pts
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.15000000596046448
-      Style: Spheres
-      Topic: /contact_points
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: true
-    - Class: rviz/Group
-      Displays:
-        - Class: rviz/Marker
-          Enabled: true
-          Marker Topic: /local_planner_1
-          Name: big_bran_1
-          Namespaces:
-            loc: true
-          Queue Size: 143
-          Value: true
-        - Class: rviz/Marker
-          Enabled: true
-          Marker Topic: /local_planner_2
-          Name: big_bran_2
-          Namespaces:
-            loc: true
-          Queue Size: 143
-          Value: true
-        - Class: rviz/Marker
-          Enabled: true
-          Marker Topic: /local_planner_10
-          Name: sec_bran_1
-          Namespaces:
-            s_loc: true
-          Queue Size: 143
-          Value: true
-        - Class: rviz/Marker
-          Enabled: true
-          Marker Topic: /local_planner_11
-          Name: sec_bran_2
-          Namespaces:
-            s_loc: true
-          Queue Size: 143
-          Value: true
-        - Class: rviz/Marker
-          Enabled: true
-          Marker Topic: /local_planner_12
-          Name: sec_bran_3
-          Namespaces:
-            s_loc: true
-          Queue Size: 143
-          Value: true
-        - Class: rviz/Marker
-          Enabled: true
-          Marker Topic: /local_planner_13
-          Name: sec_bran_4
-          Namespaces:
-            s_loc: true
-          Queue Size: 143
-          Value: true
-        - Class: rviz/Marker
-          Enabled: true
-          Marker Topic: /local_planner_14
-          Name: sec_bran_5
-          Namespaces:
-            {}
-          Queue Size: 143
-          Value: true
-        - Class: rviz/Marker
-          Enabled: true
-          Marker Topic: /local_planner_15
-          Name: sec_bran_6
-          Namespaces:
-            {}
-          Queue Size: 143
-          Value: true
-        - Class: rviz/Marker
-          Enabled: true
-          Marker Topic: /local_planner_16
-          Name: sec_bran_7
-          Namespaces:
-            {}
-          Queue Size: 143
-          Value: true
-      Enabled: true
-      Name: Peacock
-    - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
       Color: 0; 255; 0
       Enabled: true
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
-      Length: 0.30000001192092896
+      Length: 0.800000011920929
       Line Style: Billboards
-      Line Width: 0.07999999821186066
+      Line Width: 0.10000000149011612
       Name: Local_Best_path
       Offset:
         X: 0
@@ -339,7 +144,7 @@ Visualization Manager:
         Z: 0
       Pose Color: 255; 85; 255
       Pose Style: Axes
-      Radius: 0.029999999329447746
+      Radius: 0.07999999821186066
       Shaft Diameter: 0.10000000149011612
       Shaft Length: 0.10000000149011612
       Topic: /best_path
@@ -348,36 +153,13 @@ Visualization Manager:
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
-      Color: 25; 255; 0
+      Color: 25; 255; 255
       Enabled: true
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
       Line Style: Billboards
-      Line Width: 0.10000000149011612
-      Name: SLAM-Robot_path
-      Offset:
-        X: 0
-        Y: 0
-        Z: 0
-      Pose Color: 255; 85; 255
-      Pose Style: None
-      Radius: 0.029999999329447746
-      Shaft Diameter: 0.10000000149011612
-      Shaft Length: 0.10000000149011612
-      Topic: /path
-      Unreliable: false
-      Value: true
-    - Alpha: 1
-      Buffer Length: 1
-      Class: rviz/Path
-      Color: 114; 159; 207
-      Enabled: false
-      Head Diameter: 0.30000001192092896
-      Head Length: 0.20000000298023224
-      Length: 0.30000001192092896
-      Line Style: Billboards
-      Line Width: 0.10000000149011612
+      Line Width: 0.07000000029802322
       Name: GT-Robot_path
       Offset:
         X: 0
@@ -390,7 +172,7 @@ Visualization Manager:
       Shaft Length: 0.10000000149011612
       Topic: /gt_robot_path
       Unreliable: false
-      Value: false
+      Value: true
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
@@ -400,7 +182,7 @@ Visualization Manager:
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
       Line Style: Billboards
-      Line Width: 0.10000000149011612
+      Line Width: 0.07000000029802322
       Name: GT-Target_path
       Offset:
         X: 0
@@ -425,23 +207,23 @@ Visualization Manager:
       Class: rviz/PointCloud2
       Color: 186; 189; 182
       Color Transformer: AxisColor
-      Decay Time: 5000
-      Enabled: true
+      Decay Time: 0
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Min Color: 0; 0; 0
-      Name: Registered_pcl
+      Name: RGB-D depth
       Position Transformer: XYZ
       Queue Size: 10
       Selectable: true
       Size (Pixels): 1
       Size (m): 0.20000000298023224
       Style: Points
-      Topic: /cloud_registered
+      Topic: /d435i/depth/pointcloud
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: true
+      Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -510,25 +292,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 25.885665893554688
+      Distance: 30.03627586364746
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.29902926087379456
-        Y: 0.6558544635772705
-        Z: 0.720879852771759
+        X: 3.5246076583862305
+        Y: 1.839903473854065
+        Z: 0.5088295340538025
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.5697963237762451
+      Pitch: 1.5397963523864746
       Target Frame: map
       Value: Orbit (rviz)
-      Yaw: 3.145806312561035
+      Yaw: 3.3407955169677734
     Saved: ~
 Window Geometry:
   Displays:

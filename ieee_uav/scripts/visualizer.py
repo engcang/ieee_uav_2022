@@ -34,7 +34,7 @@ class path_pub():
         self.parent_frame_id = rospy.get_param("/parent_frame_id", 'map')
         self.append_rate = rospy.get_param("/append_rate", 3)
         self.robot_name = "iris"
-        self.target_name = "rover_moving_two"
+        self.target_name = "rover_moving"
 
         self.gt_path_pub = rospy.Publisher("/gt_robot_path", Path, queue_size=2)
         self.gt_path_pub2 = rospy.Publisher("/gt_target_path", Path, queue_size=2)
@@ -58,8 +58,8 @@ class path_pub():
                 self.target_pose = msg.pose[i]
                 self.target_check= 1
         if self.robot_check and self.target_check:
-            self.float_data.data = sqrt(pow(self.robot_pose.position.x-self.target_pose.position.x) +
-                                        pow(self.robot_pose.position.y-self.target_pose.position.y, 2) +
+            self.float_data.data = sqrt(pow(self.robot_pose.position.x-self.target_pose.position.x, 2) + \
+                                        pow(self.robot_pose.position.y-self.target_pose.position.y, 2) + \
                                         pow(self.robot_pose.position.z-self.target_pose.position.z, 2))
             self.distance.publish(self.float_data)
 
