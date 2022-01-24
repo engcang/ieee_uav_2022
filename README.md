@@ -3,6 +3,17 @@ IEEE UAV Competition 2022 - Low Power Computer Vision Challenges (LPCVC): Chase
 
 <br>
 
+### TO DO
++ Current MPC: position only -> velocities are needed
++ Better heading control (and planning)
++ Better centroid (Shape Lim)
++ Better target prediction
++ Obstacle avoidance
+
+<br>
+
+
+
 ### Requirements
 <details><summary>[click to see]</summary>
 	
