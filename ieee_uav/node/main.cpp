@@ -1,12 +1,10 @@
-#include "main.h"
-
+#include "include/ieee_unav.h"
 
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "trot-q_node");
-    ros::NodeHandle n("~");
 
-    ieee_uav_class ieee_uav_(n);
+    ieee_uav_class ieee_uav_();
 
     signal(SIGINT, signal_handler); // to exit program when ctrl+c
 

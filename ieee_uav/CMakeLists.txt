@@ -28,6 +28,11 @@ include_directories(
 
 catkin_package()
 
-add_executable(ieee_uav_node src/main.cpp)
+FILE(GLOB uav_sources
+    "node/include/*.h"
+    "node/include/*.hpp"
+    "node/src/*.cpp")
+
+add_executable(ieee_uav_node node/main.cpp  ${uav_sources})
 target_link_libraries(ieee_uav_node ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${OpenCV_LIBS} ${OCTOMAP_LIBRARIES}
 )

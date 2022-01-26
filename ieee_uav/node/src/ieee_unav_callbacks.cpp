@@ -1,119 +1,18 @@
-#ifndef IEEE_UAV_H
-#define IEEE_UAV_H
 
-#include "utility.h"
+#include "../include/ieee_unav.h"
 
-///// common headers
-#include <ros/ros.h>
-#include <Eigen/Eigen> // whole Eigen library : Sparse(Linearalgebra) + Dense(Core+Geometry+LU+Cholesky+SVD+QR+Eigenvalues)
-#include <iostream> //cout
-#include <math.h> // pow, atan2
-#include <chrono> 
-#include <tf/LinearMath/Quaternion.h> // to Quaternion_to_euler
-#include <tf/LinearMath/Matrix3x3.h> // to Quaternion_to_euler
-#include <tf2_msgs/TFMessage.h> //for tf between frames
-
-///// headers for path planning and controller
-#include <geometry_msgs/PoseStamped.h>
-#include <nav_msgs/Path.h>
-
-///// headers for pcl and yolo
-#include <yolo_ros_simple/bbox.h>
-#include <yolo_ros_simple/bboxes.h>
-#include <sensor_msgs/PointCloud2.h>
-
-#include <pcl/point_types.h>
-#include <pcl/PCLPointCloud2.h>
-#include <pcl/conversions.h>
-#include <pcl_conversions/pcl_conversions.h>
-#include <pcl/common/transforms.h>
-
-#include <opencv2/imgproc.hpp>
-#include <opencv2/highgui.hpp>
-#include <cv_bridge/cv_bridge.h>
 
 using namespace std;
 using namespace std::chrono; 
 using namespace Eigen;
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-class ieee_uav_class{
-  public:
-
-    std::string m_depth_topic, m_depth_base, m_body_base, m_fixed_frame, m_bbox_out_topic; 
-    bool m_bbox_check=false, m_depth_check=false, m_tf_check=false, m_body_t_cam_check=false;
-
-    ///// for yolo and pcl
-    cv_bridge::CvImagePtr m_depth_ptr;
-    double m_scale_factor;
-    double m_pcl_max_range=0.0, m_f_x, m_f_y, m_c_x, m_c_y;
-
-    //// states
-    Matrix4f m_map_t_cam = Matrix4f::Identity();
-    Matrix4f m_map_t_body = Matrix4f::Identity();
-    Matrix4f m_body_t_cam = Matrix4f::Identity();
-    double m_cvt_quat_x=0.0, m_cvt_quat_y=0.0, m_cvt_quat_z=0.0, m_cvt_quat_w=1.0;
-
-    //// for controller
-    double m_altitude_fixed;
-
-    ///// ros and tf
-    ros::NodeHandle nh;
-    ros::Subscriber m_depth_sub;
-    ros::Subscriber m_tf_sub;
-    ros::Subscriber m_bbox_sub;
-    ros::Subscriber m_new_path_sub;
-    ros::Publisher m_best_branch_pub;
-    ros::Publisher m_detected_target_pcl_pub;
-
-    void depth_callback(const sensor_msgs::Image::ConstPtr& msg);
-    void tf_callback(const tf2_msgs::TFMessage::ConstPtr& msg);
-    void bbox_callback(const yolo_ros_simple::bboxes::ConstPtr& msg);
-
-    ieee_uav_class(ros::NodeHandle& n) : nh(n){
-      ROS_WARN("Class generating...");
-      ///// params
-      nh.param("/altitude_fixed", m_altitude_fixed, 0.8);
-      nh.param("/pcl_max_range", m_pcl_max_range, 5.0);
-      nh.param("/f_x", m_f_x, 320.0);
-      nh.param("/f_y", m_f_y, 320.0);
-      nh.param("/c_x", m_c_x, 320.5);
-      nh.param("/c_y", m_c_y, 240.5);
-
-      nh.param<std::string>("/bbox_out_topic", m_bbox_out_topic, "/bboxes");
-      nh.param<std::string>("/depth_topic", m_depth_topic, "/d455/depth/image_raw");
-      nh.param<std::string>("/depth_base", m_depth_base, "camera_link");
-      nh.param<std::string>("/body_base", m_body_base, "body_base");
-      nh.param<std::string>("/fixed_frame", m_fixed_frame, "map");
-
-      ///// sub pub
-      m_depth_sub = nh.subscribe<sensor_msgs::Image>(m_depth_topic, 10, &ieee_uav_class::depth_callback, this);
-      m_tf_sub = nh.subscribe<tf2_msgs::TFMessage>("/tf", 10, &ieee_uav_class::tf_callback, this);
-      m_bbox_sub = nh.subscribe<yolo_ros_simple::bboxes>(m_bbox_out_topic, 10, &ieee_uav_class::bbox_callback, this);
-
-      m_detected_target_pcl_pub = nh.advertise<sensor_msgs::PointCloud2>("/detected_target_pcl", 10);
-      m_best_branch_pub = nh.advertise<nav_msgs::Path>("/best_path", 10);
-
-      ROS_WARN("Class heritated, starting node...");
-    }
-};
-
-
-
-
-
-
-
-
-/////////////////////////////////////////// can be separated into .cpp source file from here
-
-void ieee_uav_class::depth_callback(const sensor_msgs::Image::ConstPtr& msg){
-  sensor_msgs::Image depth=*msg;
+void ieee_uav_class::depb_callback(const sensor_msgs::ImageConstPtr& depthMsg,
+                                   const yolo_ros_simple::bboxes::ConstPtr& bboxMsg)
+{
+  sensor_msgs::Image depth=*depthMsg;
   try {
     pcl::PointXYZ p3d, p3d_empty;
-    // tic(); 
+    // tic();
     if (depth.encoding=="32FC1"){
       m_depth_ptr = cv_bridge::toCvCopy(depth, "32FC1"); // == sensor_msgs::image_encodings::TYPE_32FC1
       m_scale_factor=1.0;
@@ -129,14 +28,11 @@ void ieee_uav_class::depth_callback(const sensor_msgs::Image::ConstPtr& msg){
     ROS_ERROR("Error to cvt depth img");
     return;
   }
-}
 
-
-void ieee_uav_class::bbox_callback(const yolo_ros_simple::bboxes::ConstPtr& msg){
-  if (msg->bboxes.size() < 1)
+  if (bboxMsg->bboxes.size() < 1)
     return;
 
-  yolo_ros_simple::bbox in_bbox = msg->bboxes[0];
+  yolo_ros_simple::bbox in_bbox = bboxMsg->bboxes[0];
 
   if (m_depth_check){
     pcl::PointXYZ p3d, p3d_center;
@@ -154,7 +50,7 @@ void ieee_uav_class::bbox_callback(const yolo_ros_simple::bboxes::ConstPtr& msg)
           continue;
         }
         else if (temp_depth/m_scale_factor >= 0.1 and temp_depth/m_scale_factor <= m_pcl_max_range){
-          p3d.z = (temp_depth/m_scale_factor); 
+          p3d.z = (temp_depth/m_scale_factor);
           p3d.x = ( j - m_c_x ) * p3d.z / m_f_x;
           p3d.y = ( i - m_c_y ) * p3d.z / m_f_y;
 
@@ -262,12 +158,8 @@ void ieee_uav_class::tf_callback(const tf2_msgs::TFMessage::ConstPtr& msg){
       m_body_t_cam_check = true; // fixed!!!
     }
   }
-  
+
   m_map_t_cam = m_map_t_body * m_body_t_cam;
   if (m_body_t_cam_check)
     m_tf_check=true;
 }
-
-
-
-#endif
