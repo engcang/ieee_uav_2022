@@ -16,12 +16,9 @@ inline void signal_handler(sig_atomic_t s) {
 #define Max_L 30
 #define Max_past 300
 
-#define SAMPLE 0 
-#define PAST 1 
 
 class bezier_traj_class   {
     private:
-        ros::NodeHandle nh;
         ros::Publisher pub_pre_traj;
         ros::Publisher pub_past_traj;
         ros::Subscriber sub_tar_pose;
@@ -37,10 +34,11 @@ class bezier_traj_class   {
 
         void get_pose(const geometry_msgs::PoseStamped msg);
         void predict(const ros::TimerEvent& event);
-        void visualize(std::vector<Eigen::Vector3d> poslist, int flag);
+        void visualize_sample(std::vector<Eigen::Vector3d> poslist);
+        void visualize_past(std::vector<Eigen::Vector4d> poslist);
 
     public:
-        bezier_traj_class();
+        bezier_traj_class(ros::NodeHandle& nh);
         ~bezier_traj_class();
 };
 

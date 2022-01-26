@@ -5,7 +5,7 @@
 using namespace std;
 using namespace Eigen;
 
-bezier_traj_class::bezier_traj_class(){
+bezier_traj_class::bezier_traj_class(ros::NodeHandle& nh){
     ROS_WARN("Class generating...");
     ROS_INFO("Class generating...");
     cout << '3' << endl;
@@ -49,7 +49,7 @@ void bezier_traj_class::get_pose(const geometry_msgs::PoseStamped msg)  {
         past_detect_list.push_back(state);
     }
     
-    visualize(past_detect_list);
+    visualize_past(past_detect_list);
     // last_rcvtime = ros::Time::now().toSec();
 }
 
@@ -73,10 +73,10 @@ void bezier_traj_class::predict(const ros::TimerEvent& event)   {
         return;
     }
 
-    visualize(Sample_list, SAMPLE);
+    visualize_sample(Sample_list);
 }
 
-void bezier_traj_class::visualize(std::vector<Eigen::Vector3d> poslist, int flag) {
+void bezier_traj_class::visualize_sample(std::vector<Eigen::Vector3d> poslist) {
     visualization_msgs::Marker _pred_vis;
     _pred_vis.header.stamp       = ros::Time::now();
     _pred_vis.header.frame_id    = "map";
@@ -90,24 +90,10 @@ void bezier_traj_class::visualize(std::vector<Eigen::Vector3d> poslist, int flag
     _pred_vis.pose.orientation.y = 0.0;
     _pred_vis.pose.orientation.z = 0.0;
     _pred_vis.pose.orientation.w = 1.0;
-    if(flag == SAMPLE)  {
-        _pred_vis.color.a = 1.0;
-        _pred_vis.color.r = 0.0;
-        _pred_vis.color.g = 1.0;
-        _pred_vis.color.b = 0.0;//green
-    }
-    else if(flag == PAST)   {
-        _pred_vis.color.a = 1.0;
-        _pred_vis.color.r = 1.0;
-        _pred_vis.color.g = 0.0;
-        _pred_vis.color.b = 0.0;//red
-    }
-    else{
-        _pred_vis.color.a = 1.0;
-        _pred_vis.color.r = 1.0;
-        _pred_vis.color.g = 1.0;
-        _pred_vis.color.b = 1.0;//black
-    }
+    _pred_vis.color.a = 1.0;
+    _pred_vis.color.r = 0.0;
+    _pred_vis.color.g = 1.0;
+    _pred_vis.color.b = 0.0;//black
     Eigen::Vector3d pos;
     geometry_msgs::Point pt;
     for(unsigned int i=0;i<poslist.size();i++){
@@ -117,6 +103,82 @@ void bezier_traj_class::visualize(std::vector<Eigen::Vector3d> poslist, int flag
         pt.z = pos(2);
         _pred_vis.points.push_back(pt);
     }
-    if(flag == SAMPLE)  pub_pre_traj.publish(_pred_vis);
-    else if(flag == PAST)  pub_past_traj.publish(_pred_vis);
+    pub_pre_traj.publish(_pred_vis);
 }
+
+void bezier_traj_class::visualize_past(std::vector<Eigen::Vector4d> poslist) {
+    visualization_msgs::Marker _pred_vis;
+    _pred_vis.header.stamp       = ros::Time::now();
+    _pred_vis.header.frame_id    = "map";
+    _pred_vis.ns = "/tracking_pred_past";
+    _pred_vis.type = visualization_msgs::Marker::SPHERE_LIST;
+    _pred_vis.action = visualization_msgs::Marker::ADD;
+    _pred_vis.scale.x = 0.1;
+    _pred_vis.scale.y = 0.1;
+    _pred_vis.scale.z = 0.1;
+    _pred_vis.pose.orientation.x = 0.0;
+    _pred_vis.pose.orientation.y = 0.0;
+    _pred_vis.pose.orientation.z = 0.0;
+    _pred_vis.pose.orientation.w = 1.0;
+    _pred_vis.color.a = 1.0;
+    _pred_vis.color.r = 1.0;
+    _pred_vis.color.g = 0.0;
+    _pred_vis.color.b = 0.0;//black
+    Eigen::Vector4d pos;
+    geometry_msgs::Point pt;
+    for(unsigned int i=0;i<poslist.size();i++){
+        pos  = poslist[i];
+        pt.x = pos(0);
+        pt.y = pos(1);
+        pt.z = pos(2);
+        _pred_vis.points.push_back(pt);
+    }
+    pub_past_traj.publish(_pred_vis);
+}
+
+
+
+// void bezier_traj_class::visualize(std::vector<Eigen::Vector3d> poslist, int flag) {
+//     visualization_msgs::Marker _pred_vis;
+//     _pred_vis.header.stamp       = ros::Time::now();
+//     _pred_vis.header.frame_id    = "map";
+//     _pred_vis.ns = "/tracking_pred";
+//     _pred_vis.type = visualization_msgs::Marker::SPHERE_LIST;
+//     _pred_vis.action = visualization_msgs::Marker::ADD;
+//     _pred_vis.scale.x = 0.1;
+//     _pred_vis.scale.y = 0.1;
+//     _pred_vis.scale.z = 0.1;
+//     _pred_vis.pose.orientation.x = 0.0;
+//     _pred_vis.pose.orientation.y = 0.0;
+//     _pred_vis.pose.orientation.z = 0.0;
+//     _pred_vis.pose.orientation.w = 1.0;
+//     if(flag == SAMPLE)  {
+//         _pred_vis.color.a = 1.0;
+//         _pred_vis.color.r = 0.0;
+//         _pred_vis.color.g = 1.0;
+//         _pred_vis.color.b = 0.0;//green
+//     }
+//     else if(flag == PAST)   {
+//         _pred_vis.color.a = 1.0;
+//         _pred_vis.color.r = 1.0;
+//         _pred_vis.color.g = 0.0;
+//         _pred_vis.color.b = 0.0;//red
+//     }
+//     else{
+//         _pred_vis.color.a = 1.0;
+//         _pred_vis.color.r = 1.0;
+//         _pred_vis.color.g = 1.0;
+//         _pred_vis.color.b = 1.0;//black
+//     }
+//     Eigen::Vector3d pos;
+//     geometry_msgs::Point pt;
+//     for(unsigned int i=0;i<poslist.size();i++){
+//         pos  = poslist[i];
+//         pt.x = pos(0);
+//         pt.y = pos(1);
+//         pt.z = pos(2);
+//         _pred_vis.points.push_back(pt);
+//     }
+//     if(flag == SAMPLE)  pub_pre_traj.publish(_pred_vis);
+//     else if(flag == PAST)  pub_past_traj.publish(_pred_vis);
+// }
