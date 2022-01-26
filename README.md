@@ -71,6 +71,26 @@ $ catkin build -DCMAKE_BUILD_TYPE=Release
 ~~~shell
 $ roslaunch ieee_uav gazebo.launch
 ~~~
+
+<br>
+
++ Manually control drone with `joystick`
+~~~shell
+$ rosrun joy joy_node
+
+or
+
+$ rosrun joy joy_node _/dev:=/dev/input/js1 # check your joystick number
+
+$ python mavros_joy_control.py
+~~~
++ Then, press triangle to arm the drone
++ Then, press rectangle to change the mode into OFFBOARD
++ Then, press circle to change the control mode into POSITION control mode
++ Then, move the joystick axes to control
+
+<br>
+
 + Run `ieee_uav`
 ~~~shell
 $ roslaunch ieee_uav main.launch
