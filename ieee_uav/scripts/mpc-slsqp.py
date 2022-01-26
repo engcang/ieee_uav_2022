@@ -35,6 +35,7 @@ class mpc_ctrl():
         ### ROS Things
         rospy.init_node('mpc_controlelr', anonymous=True)
         self.drone_name = rospy.get_param("/drone_name", "iris")
+        self.altitude_fixed = rospy.get_param("/altitude_fixed", 0.8)
         self.pose_sub = rospy.Subscriber('/gazebo/model_states', ModelStates, self.pose_cb)
         self.target_pose_sub = rospy.Subscriber('/goal_pose', Odometry, self.target_pose_cb)
         self.bbox_sub = rospy.Subscriber('/bboxes', bboxes, self.bbox_cb)
@@ -55,8 +56,8 @@ class mpc_ctrl():
         self.vx_max = 1.5
         self.vy_min = -1.5
         self.vy_max = 1.5
-        self.vz_min = -0.4
-        self.vz_max = 0.4
+        self.vz_min = -0.7
+        self.vz_max = 0.7
         self.w_min = -1.2
         self.w_max = 1.2
         self.bounds = []
@@ -90,7 +91,7 @@ class mpc_ctrl():
     def target_pose_cb(self, msg):
         ref_x = msg.pose.pose.position.x
         ref_y = msg.pose.pose.position.y
-        ref_z = 0.6
+        ref_z = self.altitude_fixed
         ref_vx = msg.twist.twist.linear.x
         ref_vy = msg.twist.twist.linear.y
         ref_vz = msg.twist.twist.linear.z

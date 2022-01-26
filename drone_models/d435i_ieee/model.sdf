@@ -34,8 +34,8 @@
             <format>R8G8B8</format>
           </image>
           <clip>
-            <near>0.5</near>
-            <far>18</far>
+            <near>0.01</near>
+            <far>500</far>
           </clip>
           <distortion>
             <k1>0.0</k1>
@@ -64,7 +64,7 @@
           <pointCloudTopicName>pointcloud</pointCloudTopicName>
           <frameName>depth_camera_link</frameName>
           <pointCloudCutoff>0.1</pointCloudCutoff>
-          <pointCloudCutoffMax>10.0</pointCloudCutoffMax>
+          <pointCloudCutoffMax>12.0</pointCloudCutoffMax>
           <distortionK1>0</distortionK1>
           <distortionK2>0</distortionK2>
           <distortionK3>0</distortionK3>

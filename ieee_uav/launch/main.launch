@@ -13,7 +13,7 @@
   <param name="/f_x" value="319.99"/>
   <param name="/f_y" value="319.99"/>
 
-  <param name="/pcl_max_range" value="10.0"/>
+  <param name="/pcl_max_range" value="12.0"/>
   <param name="/depth_topic" value="/d435i/depth/image_raw"/>
   
   <param name="/depth_base" value="d435i/depth_camera_link"/>
