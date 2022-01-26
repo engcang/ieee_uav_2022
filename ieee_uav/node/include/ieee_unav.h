@@ -2,6 +2,7 @@
 #define IEEE_UAV_H
 
 #include "utility.hpp"
+#include "predict.h"
 
 ///// common headers
 #include <ros/ros.h>
@@ -16,6 +17,8 @@
 ///// headers for path planning and controller
 #include <geometry_msgs/PoseStamped.h>
 #include <nav_msgs/Path.h>
+#include <nav_msgs/Odometry.h>
+#include <gazebo_msgs/ModelStates.h>
 
 ///// headers for pcl and yolo
 #include <yolo_ros_simple/bbox.h>
@@ -47,8 +50,15 @@ typedef message_filters::sync_policies::ExactTime<sensor_msgs::Image, yolo_ros_s
 class ieee_uav_class{
 private:
 
+  ///// ros and tf
+  ros::NodeHandle nh;
+  ros::Subscriber m_tf_sub;
+  ros::Subscriber m_gt_sub;
+  ros::Publisher m_goal_pose_pub;
+  ros::Publisher m_detected_target_pcl_pub;
+
   std::string m_depth_topic, m_depth_base, m_body_base, m_fixed_frame, m_bbox_out_topic;
-  bool m_bbox_check=false, m_depth_check=false, m_tf_check=false, m_body_t_cam_check=false;
+  bool m_bbox_check=false, m_depth_check=false, m_gt_check=false, m_body_t_cam_check=false;
 
   ///// for yolo and pcl
   cv_bridge::CvImagePtr m_depth_ptr;
@@ -64,19 +74,19 @@ private:
   //// for controller
   double m_altitude_fixed;
 
-  ///// ros and tf
-  ros::NodeHandle nh;
-  ros::Subscriber m_new_path_sub;
-  ros::Publisher m_best_branch_pub;
-  ros::Publisher m_detected_target_pcl_pub;
+  ///// target polynomial
+  bezier_traj_class *target_poly_traj;
+  double m_target_traj_hz;
+  int m_traj_leng, m_traj_leng_past, m_target_predict_seg;
 
   void getParam();
   void depb_callback(const sensor_msgs::ImageConstPtr& depthMsg,
                      const yolo_ros_simple::bboxes::ConstPtr& bboxMsg);
   void tf_callback(const tf2_msgs::TFMessage::ConstPtr& msg);
+  void gt_callback(const gazebo_msgs::ModelStates::ConstPtr& msg);
 
 public:
-  ieee_uav_class();
+  ieee_uav_class(ros::NodeHandle& n);
   ~ieee_uav_class();
 };
 

@@ -27,7 +27,7 @@
 
       <sensor name="camera" type="depth">
         <camera name="depth">
-          <horizontal_fov>1.02974</horizontal_fov>
+          <horizontal_fov>1.5708</horizontal_fov>
           <image>
             <width>640</width>
             <height>480</height>

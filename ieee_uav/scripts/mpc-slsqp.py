@@ -2,13 +2,13 @@
 
 import numpy as np
 from scipy.optimize import minimize
-from math import pow, sqrt, cos, sin
+from math import pow, sqrt, cos, sin, atan2
 
 import rospy
 from tf.transformations import euler_from_quaternion
-from nav_msgs.msg import Odometry, Path
-from geometry_msgs.msg import TwistStamped, PoseStamped
-from std_msgs.msg import Bool
+from nav_msgs.msg import Odometry
+from geometry_msgs.msg import TwistStamped
+from gazebo_msgs.msg import ModelStates
 from yolo_ros_simple.msg import bboxes
 
 import time
@@ -34,27 +34,29 @@ class mpc_ctrl():
 
         ### ROS Things
         rospy.init_node('mpc_controlelr', anonymous=True)
-        self.pose_sub = rospy.Subscriber('/mavros/local_position/pose', PoseStamped, self.pose_cb)
-        self.traj_sub = rospy.Subscriber('/best_path', Path, self.traj_cb)
+        self.drone_name = rospy.get_param("/drone_name", "iris")
+        self.pose_sub = rospy.Subscriber('/gazebo/model_states', ModelStates, self.pose_cb)
+        self.target_pose_sub = rospy.Subscriber('/goal_pose', Odometry, self.target_pose_cb)
         self.bbox_sub = rospy.Subscriber('/bboxes', bboxes, self.bbox_cb)
         self.control_pub = rospy.Publisher('/mavros/setpoint_velocity/cmd_vel', TwistStamped, queue_size=2)
-        self.rate = rospy.Rate(15)
         
+        self.rate = rospy.Rate(15)
+
         self.pose_in = False
-        self.traj_in = False
+        self.goal_in = False
         self.bbox_in = False
 
         ### MPC setup
         self.horizon = 10
         self.dt = 0.07
-        self.num_inputs = 4 # linear_x, linear_y, linear_z, angular_z
+        self.num_inputs = 3 # linear_x, linear_y, linear_z
 
-        self.vx_min = -1.0
-        self.vx_max = 1.0
-        self.vy_min = -1.0
-        self.vy_max = 1.0
-        self.vz_min = -0.2
-        self.vz_max = 0.2
+        self.vx_min = -1.5
+        self.vx_max = 1.5
+        self.vy_min = -1.5
+        self.vy_max = 1.5
+        self.vz_min = -0.4
+        self.vz_max = 0.4
         self.w_min = -1.2
         self.w_max = 1.2
         self.bounds = []
@@ -62,81 +64,88 @@ class mpc_ctrl():
             self.bounds += [[self.vx_min, self.vx_max]]
             self.bounds += [[self.vy_min, self.vy_max]]
             self.bounds += [[self.vz_min, self.vz_max]]
-            self.bounds += [[self.w_min, self.w_max]]
         self.bounds = np.array(self.bounds)
 
         self.u = np.zeros(self.horizon*self.num_inputs)
 
         self.position_weight = 3.0
-        self.yaw_weight = 1.0
-        self.input_weight = 0.5
+        self.velocity_weight = 3.0
+        self.input_weight = 1.5
         self.input_smoothness_weight = 2.0
 
     def pose_cb(self, msg):
-        curr_x = msg.pose.position.x
-        curr_y = msg.pose.position.y
-        curr_z = msg.pose.position.z
-        _, _, curr_yaw = euler_from_quaternion([msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w])
-        self.current_state = np.array([curr_x, curr_y, curr_z, rpy_saturation(curr_yaw)])
-        self.pose_in = True
+        for i in range(len(msg.name)):
+            if msg.name[i]==self.drone_name:
+                curr_x = msg.pose[i].position.x
+                curr_y = msg.pose[i].position.y
+                curr_z = msg.pose[i].position.z
+                curr_vx = msg.twist[i].linear.x
+                curr_vy = msg.twist[i].linear.y
+                curr_vz = msg.twist[i].linear.z
+                _, _, self.curr_yaw = euler_from_quaternion([msg.pose[i].orientation.x, msg.pose[i].orientation.y, msg.pose[i].orientation.z, msg.pose[i].orientation.w])
+                self.current_state = np.array([curr_x, curr_y, curr_z, curr_vx, curr_vy, curr_vz])
+                self.pose_in = True
         return
 
-    def traj_cb(self, msg):
-        if len(msg.poses) > 1 :
-            last_idx=len(msg.poses)-1
+    def target_pose_cb(self, msg):
+        ref_x = msg.pose.pose.position.x
+        ref_y = msg.pose.pose.position.y
+        ref_z = 0.6
+        ref_vx = msg.twist.twist.linear.x
+        ref_vy = msg.twist.twist.linear.y
+        ref_vz = msg.twist.twist.linear.z
+        self.goal_ref = np.array([ref_x, ref_y, ref_z, ref_vx, ref_vy, ref_vz])
+        self.goal_in = True
+        return
 
-            ref_x = msg.poses[last_idx].pose.position.x
-            ref_y = msg.poses[last_idx].pose.position.y
-            ref_z = msg.poses[last_idx].pose.position.z
-            _, _, ref_yaw = euler_from_quaternion([msg.poses[last_idx].pose.orientation.x, msg.poses[last_idx].pose.orientation.y, msg.poses[last_idx].pose.orientation.z, msg.poses[last_idx].pose.orientation.w])
-            self.traj_ref = np.array([ref_x, ref_y, ref_z, rpy_saturation(ref_yaw)])
-            self.traj_in = True
-            return
 
-
-    def cost_function(self,u, *args):
+    def cost_function(self, u, *args):
         curr_state = args[0]
         ref = args[1]
         cost = 0.0
         for i in range(self.horizon):
             prev_state = curr_state
-            curr_state = self.plant(prev_state, self.dt, u[i*self.num_inputs], u[i*self.num_inputs+1], u[i*self.num_inputs+2], u[i*self.num_inputs+3])
+            curr_state = self.plant(prev_state, self.dt, u[i*self.num_inputs], u[i*self.num_inputs+1], u[i*self.num_inputs+2])
 
-            #tracking cost
+            # tracking cost
             distance = pow(curr_state[0]-ref[0], 2) + pow(curr_state[1]-ref[1], 2) + pow(curr_state[2]-ref[2], 2)
-            if distance > 5:
-                cost += self.position_weight * (distance-5)
-            elif distance <= 5:
-                cost += self.position_weight * (5-distance)
+            if distance > 3:
+                cost += self.position_weight * (distance-3)
+            elif distance <= 3:
+                cost += self.position_weight * (3-distance)
             # cost += self.position_weight * distance
-            cost += self.yaw_weight * pow(rpy_saturation(curr_state[3]-ref[3]), 2)
+
+            # velocity tracking cost
+            cost += self.velocity_weight * ( pow(curr_state[3]-ref[3], 2) + pow(curr_state[4]-ref[4], 2) + pow(curr_state[5]-ref[5], 2) )
 
             #input cost
             cost += self.input_weight * pow(u[i*self.num_inputs], 2)
             cost += self.input_weight * pow(u[i*self.num_inputs+1], 2)
             cost += self.input_weight * pow(u[i*self.num_inputs+2], 2)
-            cost += self.input_weight * pow(u[i*self.num_inputs+3], 2)
 
             #input smoothness
             if i>0:
                 cost += self.input_smoothness_weight * pow(u[i*self.num_inputs]-u[(i-1)*self.num_inputs], 2)
                 cost += self.input_smoothness_weight * pow(u[i*self.num_inputs+1]-u[(i-1)*self.num_inputs+1], 2)
                 cost += self.input_smoothness_weight * pow(u[i*self.num_inputs+2]-u[(i-1)*self.num_inputs+2], 2)  
-                cost += self.input_smoothness_weight * pow(u[i*self.num_inputs+3]-u[(i-1)*self.num_inputs+3], 2)  
         return cost
 
 
-    def plant(self, prev_state, dt, vx, vy, vz, w):
+    def plant(self, prev_state, dt, vx, vy, vz):
         x_t = prev_state[0]
         y_t = prev_state[1]
         z_t = prev_state[2]
-        yaw_t = prev_state[3]
+        vx_t = prev_state[3]
+        vy_t = prev_state[4]
+        vz_t = prev_state[5]
 
-        x_t_1 = x_t + vx*dt
-        y_t_1 = y_t + vy*dt
-        z_t_1 = z_t + vz*dt
-        yaw_t_1 = rpy_saturation(yaw_t + w*dt)
-        return [x_t_1, y_t_1, z_t_1, yaw_t_1]
+        x_t_1 = x_t + vx_t*dt
+        y_t_1 = y_t + vy_t*dt
+        z_t_1 = z_t + vz_t*dt
+        vx_t_1 = vx
+        vy_t_1 = vy
+        vz_t_1 = vz
+        return [x_t_1, y_t_1, z_t_1, vx_t_1, vy_t_1, vz_t_1]
 
     def bbox_cb(self, msg):
         if len(msg.bboxes)>0:
@@ -152,7 +161,7 @@ if __name__ == '__main__':
 
     while 1:
         try:
-            if mpc_.pose_in and mpc_.traj_in:
+            if mpc_.pose_in and mpc_.goal_in:
 
                 ### mpc start
                 tic = time.time()
@@ -161,7 +170,7 @@ if __name__ == '__main__':
                     mpc_.u = np.delete(mpc_.u, 0) #remove first input
                     mpc_.u = np.append(mpc_.u, mpc_.u[-mpc_.num_inputs]) #copy last input
 
-                u_solution = minimize(mpc_.cost_function, mpc_.u, (mpc_.current_state, mpc_.traj_ref),
+                u_solution = minimize(mpc_.cost_function, mpc_.u, (mpc_.current_state, mpc_.goal_ref),
                                       method='SLSQP', bounds=mpc_.bounds, tol=1e-4, options = {'disp': False}) #disp - debugging
                 mpc_.u = u_solution.x
                 # print(u_solution.x) #solution is stored in "x"
@@ -170,16 +179,16 @@ if __name__ == '__main__':
 
                 solved_input = TwistStamped()
                 solved_input.header.stamp = rospy.Time.now()
-                # solved_input.twist.linear.x = cos(curr_yaw) * u_solution.x[0] + sin(curr_yaw) * u_solution.x[1]
-                # solved_input.twist.linear.y = -sin(curr_yaw) * u_solution.x[0] + cos(curr_yaw) * u_solution.x[1]
                 solved_input.twist.linear.x = u_solution.x[0]
                 solved_input.twist.linear.y = u_solution.x[1]
                 solved_input.twist.linear.z = u_solution.x[2]
+
+                forward_yaw = atan2(mpc_.goal_ref[1]-mpc_.current_state[1], mpc_.goal_ref[0]-mpc_.current_state[0])
                 if mpc_.bbox_in:
-                    solved_input.twist.angular.z = rpy_saturation(u_solution.x[3] + mpc_.ibvs_yaw*3)
+                    solved_input.twist.angular.z = rpy_saturation(rpy_saturation(forward_yaw - mpc_.curr_yaw) + mpc_.ibvs_yaw*2)
                     mpc_.bbox_in=False
                 else:
-                    solved_input.twist.angular.z = u_solution.x[3]
+                    solved_input.twist.angular.z = rpy_saturation(forward_yaw - mpc_.curr_yaw)
                 mpc_.control_pub.publish(solved_input)
 
                 toc = time.time()

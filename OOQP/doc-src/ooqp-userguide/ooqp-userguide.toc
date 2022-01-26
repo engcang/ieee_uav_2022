@@ -1,0 +1,46 @@
+\contentsline {section}{Abstract}{1}
+\contentsline {section}{\numberline {1}Introduction}{2}
+\contentsline {subsection}{\numberline {1.1}Different Views of OOQP}{3}
+\contentsline {paragraph}{Shrink-Wrapped Solution.}{3}
+\contentsline {paragraph}{Embeddable Solver.}{3}
+\contentsline {paragraph}{Development Framework.}{3}
+\contentsline {paragraph}{Research Tool.}{4}
+\contentsline {subsection}{\numberline {1.2}Obtaining OOQP}{4}
+\contentsline {subsection}{\numberline {1.3}How to Read This Manual}{4}
+\contentsline {subsection}{\numberline {1.4}Other Resources}{5}
+\contentsline {section}{\numberline {2}Using the Default QP Formulation}{7}
+\contentsline {subsection}{\numberline {2.1}Command-Line Interface}{7}
+\contentsline {subsection}{\numberline {2.2}Calling from a C Program}{10}
+\contentsline {subsection}{\numberline {2.3}Calling from a C++ Program}{14}
+\contentsline {subsection}{\numberline {2.4}Use in AMPL}{17}
+\contentsline {subsection}{\numberline {2.5}Use in MATLAB}{18}
+\contentsline {section}{\numberline {3}Overview of the OOQP Development Framework}{20}
+\contentsline {subsection}{\numberline {3.1}The Three Layers of OOQP}{20}
+\contentsline {paragraph}{QP Solver Layer.}{20}
+\contentsline {paragraph}{Problem Formulation Layer.}{20}
+\contentsline {paragraph}{Linear Algebra Layer.}{21}
+\contentsline {subsection}{\numberline {3.2}OOQP Directory Structure and Build Process}{22}
+\contentsline {section}{\numberline {4}Working with the QP Solver}{26}
+\contentsline {subsection}{\numberline {4.1}Primal-Dual Interior-Point Algorithms}{26}
+\contentsline {subsection}{\numberline {4.2}Monitoring the Algorithm: The {\tt Monitor} Class}{28}
+\contentsline {subsection}{\numberline {4.3}Checking Termination Conditions: The {\tt Status} Class}{30}
+\contentsline {section}{\numberline {5}Creating a New QP Formulation}{33}
+\contentsline {subsection}{\numberline {5.1}Linear Algebra Operations}{34}
+\contentsline {subsection}{\numberline {5.2}Specializing the Problem Formulation Layer}{34}
+\contentsline {subsubsection}{\numberline {5.2.1}Specializing {\tt Data}}{34}
+\contentsline {subsubsection}{\numberline {5.2.2}Specializing {\tt Variables}}{35}
+\contentsline {subsubsection}{\numberline {5.2.3}Specializing {\tt Residuals}}{37}
+\contentsline {subsubsection}{\numberline {5.2.4}Specializing {\tt LinearSystem}}{38}
+\contentsline {subsubsection}{\numberline {5.2.5}Specializing \texttt {ProblemFormulation}}{40}
+\contentsline {section}{\numberline {6}Using Linear Algebra Objects}{42}
+\contentsline {subsection}{\numberline {6.1}Reference Counting}{42}
+\contentsline {subsection}{\numberline {6.2}Using \texttt {SimpleVector}}{44}
+\contentsline {subsection}{\numberline {6.3}Using \texttt {DenseGenMatrix}\ and \texttt {DenseSymMatrix}}{45}
+\contentsline {subsection}{\numberline {6.4}Using \texttt {SparseGenMatrix}\ and \texttt {SparseSymMatrix}}{47}
+\contentsline {section}{\numberline {7}Specializing Linear Algebra Objects}{51}
+\contentsline {subsection}{\numberline {7.1}Using a Different Linear Equation Solver}{51}
+\contentsline {subsubsection}{\numberline {7.1.1}Creating a Subclass of {\tt DoubleLinearSolver}}{51}
+\contentsline {subsubsection}{\numberline {7.1.2}Creating a Subclass of {\tt ProblemFormulation}}{53}
+\contentsline {subsection}{\numberline {7.2}Specializing the Representation of Vectors and Matrices}{55}
+\contentsline {section}{References}{59}
+\contentsline {section}{\numberline {A}COPYRIGHT}{61}

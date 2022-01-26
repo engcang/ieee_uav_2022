@@ -2,12 +2,12 @@
 <launch>
 
   <!-- manual controller for Jackal -->
-  <!-- <node name="joy_ros" pkg="joy" type="joy_node"> -->
-      <!-- <param name="/dev" value="/dev/input/js1"/> -->
-  <!-- </node> -->
-  <!-- <node name="ctrl_joy" pkg="px4" type="mavros_joy_controller.py"/> -->
+  <node name="joy_ros" pkg="joy" type="joy_node">
+      <param name="/dev" value="/dev/input/js1"/>
+  </node>
+  <node name="ctrl_joy" pkg="px4" type="mavros_joy_controller.py"/>
 
-  <param name="/altitude_fixed" value="0.5"/>
+  <param name="/altitude_fixed" value="0.8"/>
   <param name="/c_x" value="320.5"/>
   <param name="/c_y" value="240.5"/>
   <param name="/f_x" value="319.99"/>
@@ -20,6 +20,11 @@
   <param name="/body_base" value="base_link"/>
   <param name="/fixed_frame" value="map"/>
 
+  <!-- For target prediction -->
+  <param name="/target_traj_hz" value="12.0"/>
+  <param name="/traj_leng" value="30"/>
+  <param name="/traj_leng_past" value="300"/>
+  <param name="/target_predict_seg" value="10"/>
 
   <!-- Nodes  -->
 

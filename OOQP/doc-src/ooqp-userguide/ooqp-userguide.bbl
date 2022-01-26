@@ -1,0 +1,139 @@
+\begin{thebibliography}{10}
+
+\bibitem{lapack}
+E.~Anderson, Z.~Bai, C.~Bischof, J.~Demmel, J.~Dongarra, J.~{Du Croz},
+  A.~Greenbaum, S.~Hammarling, A.~McKenney, S.~Ostrouchov, and D.~Sorensen.
+\newblock {\em {LAPACK} {U}ser's {G}uide}.
+\newblock SIAM, Philadelphia, 1992.
+
+\bibitem{petsc-home-page}
+Satish Balay, Kris Buschelman, William~D. Gropp, Dinesh Kaushik, Lois~Curfman
+  McInnes, and Barry~F. Smith.
+\newblock {PETSc} home page.
+\newblock \texttt{www.mcs.anl.gov/petsc}, 2001.
+
+\bibitem{petsc-efficient}
+Satish Balay, William~D. Gropp, Lois~Curfman McInnes, and Barry~F. Smith.
+\newblock Efficient management of parallelism in object oriented numerical
+  software libraries.
+\newblock In E.~Arge, A.~M. Bruaset, and H.~P. Langtangen, editors, {\em Modern
+  Software Tools in Scientific Computing}, pages 163--202, Boston, 1997.
+  Birkhauser Press.
+
+\bibitem{petsc-manual}
+Satish Balay, William~D. Gropp, Lois~Curfman McInnes, and Barry~F. Smith.
+\newblock {PETSc} users manual.
+\newblock Technical Report ANL-95/11 - Revision 2.1.0, Argonne National
+  Laboratory, 2001.
+
+\bibitem{PCx99}
+J.~Czyzyk, S.~Mehrotra, M.~Wagner, and S.~J. Wright.
+\newblock {PCx}: An interior-point code for linear programming.
+\newblock {\em Optimization Methods and Software}, 11/12:397--430, 1999.
+
+\bibitem{DemGL99}
+J.~W. Demmel, J.~R. Gilbert, and X.~S. Li.
+\newblock {\em {SuperLU User's Guide}}, 1999.
+\newblock Available from {\tt www.nersc.gov/~xiaoye/SuperLU/}.
+
+\bibitem{DobP00}
+F.~Dobrian and A.~Pothen.
+\newblock {Oblio}: {A} sparse direct solver library for serial and parallel
+  computations.
+\newblock Technical report, Department of Computer Science, Old Dominion
+  University, 2000.
+
+\bibitem{DufER86}
+I.~S. Duff, A.~M. Erisman, and J.~K. Reid.
+\newblock {\em Direct Methods for Sparse Matrices}.
+\newblock Clarendon Press, Oxford, 1986.
+
+\bibitem{duff82ma27}
+Iain~S. Duff and J.~K. Reid.
+\newblock {MA27} -- {A} set of {Fortran} subroutines for solving sparse
+  symmetric sets of linear equations.
+\newblock Technical Report AERE R10533, {AERE Harwell} Laboratory, London,
+  England, 1982.
+
+\bibitem{Fre93}
+R.~Freund.
+\newblock A transpose-free quasi-minimal residual algorithm for non-{H}ermitian
+  linear systems.
+\newblock {\em SIAM Journal on Scientific Computing}, 14:470--482, 1993.
+
+\bibitem{FreN91}
+R.~Freund and N.~Nachtigal.
+\newblock {QMR:} {A} quasi-minimal residual method for non-{H}ermitian linear
+  systems.
+\newblock {\em Numerische Mathematik}, 60:315--339, 1991.
+
+\bibitem{GerW01}
+E.~M. Gertz and S.~J. Wright.
+\newblock Object-oriented software for quadratic programming.
+\newblock Preprint ANL/MCS-P999-0901, Mathematics and Computer Science
+  Division, Argonne National Laboratory, September 2001.
+
+\bibitem{Gon94d}
+J.~Gondzio.
+\newblock Multiple centrality corrections in a primal-dual method for linear
+  programming.
+\newblock {\em Computational Optimization and Applications}, 6:137--156, 1996.
+
+\bibitem{hsl2000}
+{HSL}: A collection of {Fortran} codes for large scale scientific computation,
+  2000.
+\newblock Full details in {http://www.numerical.rl.ac.uk/hsl}.
+
+\bibitem{ctk:roots}
+C.~T. Kelley.
+\newblock {\em {Iterative Methods for Linear and Nonlinear Equations}}.
+\newblock Number~16 in Frontiers in Applied Mathematics. SIAM Publications,
+  Philadelphia, 1995.
+
+\bibitem{lawson79basic}
+C.~L. Lawson, R.~J. Hanson, D.~R. Kincaid, and F.~T. Krogh.
+\newblock Basic linear algebra subprograms for fortran usage.
+\newblock {\em Application for Computing Machinery Transactions on Mathematical
+  Software}, 5:308--323, 1979.
+
+\bibitem{MarM99}
+I.~Maros and C.~{M\'esz\'aros}.
+\newblock A repository of convex quadratic programming problems.
+\newblock {\em Optimization Methods and Software}, 11 and 12:671--681, December
+  1999.
+
+\bibitem{Meh92b}
+S.~Mehrotra.
+\newblock Asymptotic convergence in a generalized predictor-corrector method.
+\newblock {Technical Report}, Dept.\ of Industrial Engineering and Management
+  Science, Northwestern University, Evanston, Ill., October 1992.
+
+\bibitem{Meh92a}
+S.~Mehrotra.
+\newblock On the implementation of a primal-dual interior point method.
+\newblock {\em SIAM Journal on Optimization}, 2:575--601, 1992.
+
+\bibitem{Mur81}
+B.~A. Murtagh.
+\newblock {\em Advanced Linear Programming: Computation and Practice}.
+\newblock McGraw-Hill, New York, 1981.
+
+\bibitem{RaoWR97}
+C.~V. Rao, S.~J. Wright, and J.~B. Rawlings.
+\newblock Application of interior-point methods to model predictive control.
+\newblock {\em Journal of Optimization Theory and Applications}, 99:723--757,
+  1998.
+
+\bibitem{Wal89}
+H.~Walker.
+\newblock Implementation of the {GMRES} method using {H}ouseholger
+  transformations.
+\newblock {\em SIAM Journal on Scientific and Statistical Computing},
+  9:815--825, 1989.
+
+\bibitem{IPPD96}
+S.~J. Wright.
+\newblock {\em Primal-Dual Interior-Point Methods}.
+\newblock SIAM Publications, Philadelphia, 1997.
+
+\end{thebibliography}

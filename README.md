@@ -58,6 +58,28 @@ $ cd ..
 $ catkin build -DCMAKE_BUILD_TYPE=Release
 ~~~
 
++ OOQP
+	+ Dependencies.
+	```
+	$ sudo apt-get install gfortran
+	$ sudo apt-get install doxygen
+	```
+	+ Install `ma27` and type below commands in MA27's folder.
+	```
+	$ cd ma27-1.0.0
+	$ ./configure
+	$ make
+	$ sudo make install
+	```
+	+ Install `OOQP` and type below commands in OOQP's folder.
+	```
+	$ cd OOQP
+	$ sudo apt install texlive-latex-base
+	$ ./configure
+	$ make 
+	$ sudo make install
+	```
+
 ---
 
 </details>
@@ -96,24 +118,6 @@ $ python mavros_joy_control.py
 $ roslaunch ieee_uav main.launch
 ~~~
 
-+ OOQP
-	+ Dependencies.
-	```
-		sudo apt-get install gfortran
-		sudo apt-get install doxygen
-	```
-	+ Un-zip 'ma27-1.0.0.tar.gz' and type below commands in MA27's folder.
-	```
-		./configure
-		make
-		sudo make install
-	```
-	+ Un-zip 'OOQP.zip' and type below commands in OOQP's folder.
-	```
-		./configure
-		make 
-		sudo make install
-	```
 
 <br>
 

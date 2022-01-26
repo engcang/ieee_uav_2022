@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_ros
   yolo_ros_simple
   mavros
+  gazebo_msgs
 )
 
 find_package(Eigen3 REQUIRED)
@@ -19,7 +20,8 @@ find_package(OpenCV REQUIRED)
 find_package(octomap REQUIRED)
 
 include_directories(
-  include
+  node/include
+  target_traj/include
   ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
   ${OpenCV_INCLUDE_DIRS}
@@ -28,11 +30,17 @@ include_directories(
 
 catkin_package()
 
+FILE(GLOB target_traj_sources
+    "target_traj/include/*.h"
+    "target_traj/src/*.cpp")
+
 FILE(GLOB uav_sources
     "node/include/*.h"
     "node/include/*.hpp"
     "node/src/*.cpp")
 
-add_executable(ieee_uav_node node/main.cpp  ${uav_sources})
+
+add_executable(ieee_uav_node node/main.cpp  ${uav_sources} ${target_traj_sources})
 target_link_libraries(ieee_uav_node ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${OpenCV_LIBS} ${OCTOMAP_LIBRARIES}
+  ooqpgensparse ooqpsparse ooqpgondzio ooqpbase blas ma27 gfortran
 )

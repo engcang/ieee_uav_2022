@@ -1,5 +1,4 @@
-
-#include "../include/ieee_unav.h"
+#include "ieee_unav.h"
 
 
 using namespace std;
@@ -71,52 +70,40 @@ void ieee_uav_class::depb_callback(const sensor_msgs::ImageConstPtr& depthMsg,
       m_detected_target_pcl_pub.publish(cloud2msg(*detected_center_pub, m_depth_base));
       m_bbox_check=true;
 
-      if(m_tf_check){
-        nav_msgs::Path path_for_control;
-        path_for_control.header.stamp = ros::Time::now();
-        path_for_control.header.frame_id = m_fixed_frame;
-
-        geometry_msgs::PoseStamped starting_pose, end_pose;
-        starting_pose.pose.position.x = m_map_t_body(0,3);
-        starting_pose.pose.position.y = m_map_t_body(1,3);
-        starting_pose.pose.position.z = m_map_t_body(2,3);
-        starting_pose.pose.orientation.x = m_cvt_quat_x;
-        starting_pose.pose.orientation.y = m_cvt_quat_y;
-        starting_pose.pose.orientation.z = m_cvt_quat_z;
-        starting_pose.pose.orientation.w = m_cvt_quat_w;
+      if(m_gt_check){
+        nav_msgs::Odometry odom_for_control;
 
         MatrixXf center_before_tf(4,1), center_after_tf(4,1);
         center_before_tf << p3d_center.x, p3d_center.y, p3d_center.z, 1.0;
         center_after_tf = m_map_t_cam * center_before_tf;
 
-        float target_yaw_ = atan2(center_after_tf(1)-starting_pose.pose.position.y, center_after_tf(0)-starting_pose.pose.position.x);
-        tf::Quaternion target_quaternion_;
-        target_quaternion_.setRPY(0, 0, target_yaw_);
+        target_poly_traj->get_pose(center_after_tf(0), center_after_tf(1), center_after_tf(2), bboxMsg->header.stamp.toSec());
+      
+        std::vector<Eigen::Matrix<double,6,1>> predict_target_list = target_poly_traj->predict_state_list;
+        if (predict_target_list.size() > m_target_predict_seg){
+          odom_for_control.pose.pose.position.x = predict_target_list[m_target_predict_seg](0);
+          odom_for_control.pose.pose.position.y = predict_target_list[m_target_predict_seg](1);
+          odom_for_control.pose.pose.position.z = m_altitude_fixed;
+          odom_for_control.pose.pose.orientation.w = 1.0;
 
-        end_pose.pose.position.x = center_after_tf(0);
-        end_pose.pose.position.y = center_after_tf(1);
-        end_pose.pose.position.z = m_altitude_fixed;
-        end_pose.pose.orientation.x = target_quaternion_.getX();
-        end_pose.pose.orientation.y = target_quaternion_.getY();
-        end_pose.pose.orientation.z = target_quaternion_.getZ();
-        end_pose.pose.orientation.w = target_quaternion_.getW();
-
-        path_for_control.poses.push_back(starting_pose);
-        path_for_control.poses.push_back(end_pose);
-
-        m_best_branch_pub.publish(path_for_control);
+          odom_for_control.twist.twist.linear.x = predict_target_list[m_target_predict_seg](3);
+          odom_for_control.twist.twist.linear.y = predict_target_list[m_target_predict_seg](4);
+          odom_for_control.twist.twist.linear.z = predict_target_list[m_target_predict_seg](5);
+          
+          m_goal_pose_pub.publish(odom_for_control);
+        } 
       }
     }
 
   }
 }
 
-void ieee_uav_class::tf_callback(const tf2_msgs::TFMessage::ConstPtr& msg){
-  for (int l=0; l < msg->transforms.size(); l++){
-    if (msg->transforms[l].header.frame_id==m_fixed_frame && msg->transforms[l].child_frame_id==m_body_base){
-      ///// for tf between map and body
-      tf::Quaternion q(msg->transforms[l].transform.rotation.x, msg->transforms[l].transform.rotation.y, msg->transforms[l].transform.rotation.z, msg->transforms[l].transform.rotation.w);
+void ieee_uav_class::gt_callback(const gazebo_msgs::ModelStates::ConstPtr& msg){
+  for (int i = 0; i < msg->pose.size(); ++i){
+    if (msg->name[i] == "iris"){
+      tf::Quaternion q(msg->pose[i].orientation.x, msg->pose[i].orientation.y, msg->pose[i].orientation.z, msg->pose[i].orientation.w);
       tf::Matrix3x3 m(q);
+
       m_map_t_body(0,0) = m[0][0];
       m_map_t_body(0,1) = m[0][1];
       m_map_t_body(0,2) = m[0][2];
@@ -127,9 +114,9 @@ void ieee_uav_class::tf_callback(const tf2_msgs::TFMessage::ConstPtr& msg){
       m_map_t_body(2,1) = m[2][1];
       m_map_t_body(2,2) = m[2][2];
 
-      m_map_t_body(0,3) = msg->transforms[l].transform.translation.x;
-      m_map_t_body(1,3) = msg->transforms[l].transform.translation.y;
-      m_map_t_body(2,3) = msg->transforms[l].transform.translation.z;
+      m_map_t_body(0,3) = msg->pose[i].position.x;
+      m_map_t_body(1,3) = msg->pose[i].position.y;
+      m_map_t_body(2,3) = msg->pose[i].position.z;
       m_map_t_body(3,3) = 1.0;
 
       m_cvt_quat_x = q.getX();
@@ -137,6 +124,17 @@ void ieee_uav_class::tf_callback(const tf2_msgs::TFMessage::ConstPtr& msg){
       m_cvt_quat_z = q.getZ();
       m_cvt_quat_w = q.getW();
     }
+  }
+  if (m_body_t_cam_check){
+    m_gt_check = true;
+    m_map_t_cam = m_map_t_body * m_body_t_cam;
+  }
+
+}
+void ieee_uav_class::tf_callback(const tf2_msgs::TFMessage::ConstPtr& msg){
+  if(m_body_t_cam_check)
+    return;
+  for (int l=0; l < msg->transforms.size(); l++){
     if (msg->transforms[l].child_frame_id==m_depth_base && !m_body_t_cam_check){
       tf::Quaternion q2(msg->transforms[l].transform.rotation.x, msg->transforms[l].transform.rotation.y, msg->transforms[l].transform.rotation.z, msg->transforms[l].transform.rotation.w);
       tf::Matrix3x3 m2(q2);
@@ -158,8 +156,4 @@ void ieee_uav_class::tf_callback(const tf2_msgs::TFMessage::ConstPtr& msg){
       m_body_t_cam_check = true; // fixed!!!
     }
   }
-
-  m_map_t_cam = m_map_t_body * m_body_t_cam;
-  if (m_body_t_cam_check)
-    m_tf_check=true;
 }
