@@ -65,7 +65,8 @@ class cv_yolo_ros():
         self.model.setInputParams(size=(640, 480), scale=1/float(255.0), swapRB=True)
 
     def img_callback(self, msg):
-        self.img_cb_in = self.bridge.imgmsg_to_cv2(msg, "bgr8")
+        self.img_cb_in = msg
+        # self.img_cb_in = self.bridge.imgmsg_to_cv2(msg, "bgr8")
         self.flag = True
 
 
@@ -78,7 +79,9 @@ if __name__=='__main__':
         try:
             if cyr.flag:
                 start = time.time()
-                frame = cyr.img_cb_in #temporal backup
+                # frame = cyr.img_cb_in #temporal backup
+                header = cyr.img_cb_in.header
+                frame = cyr.bridge.imgmsg_to_cv2(cyr.img_cb_in, "bgr8")
                 classes, scores, boxes = cyr.model.detect(frame, cyr.confidence_threshold, cyr.nms_threshold)
                 end = time.time()
                 FPS = 1 / (end - start)
@@ -86,6 +89,7 @@ if __name__=='__main__':
                 avg_FPS = total_fps / float(count)
 
                 out_boxes = bboxes()
+                out_boxes.header = header
                 start_drawing = time.time()
                 for (classid, score, box) in zip(classes, scores, boxes):
                     out_box = bbox()
