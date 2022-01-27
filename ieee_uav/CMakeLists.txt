@@ -7,12 +7,25 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -g")
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  nav_msgs
   cv_bridge
   pcl_conversions
   pcl_ros
   yolo_ros_simple
   mavros
   gazebo_msgs
+  message_generation
+  message_runtime
+)
+
+add_message_files(
+  FILES
+    odom_array.msg
+)
+
+generate_messages(
+  DEPENDENCIES
+    nav_msgs
 )
 
 find_package(Eigen3 REQUIRED)

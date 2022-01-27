@@ -71,7 +71,6 @@ void ieee_uav_class::depb_callback(const sensor_msgs::ImageConstPtr& depthMsg,
       m_bbox_check=true;
 
       if(m_gt_check){
-        nav_msgs::Odometry odom_for_control;
 
         MatrixXf center_before_tf(4,1), center_after_tf(4,1);
         center_before_tf << p3d_center.x, p3d_center.y, p3d_center.z, 1.0;
@@ -81,16 +80,20 @@ void ieee_uav_class::depb_callback(const sensor_msgs::ImageConstPtr& depthMsg,
       
         std::vector<Eigen::Matrix<double,6,1>> predict_target_list = target_poly_traj->predict_state_list;
         if (predict_target_list.size() > m_target_predict_seg){
-          odom_for_control.pose.pose.position.x = predict_target_list[m_target_predict_seg](0);
-          odom_for_control.pose.pose.position.y = predict_target_list[m_target_predict_seg](1);
-          odom_for_control.pose.pose.position.z = m_altitude_fixed;
-          odom_for_control.pose.pose.orientation.w = 1.0;
+          ieee_uav::odom_array pub_odom_array;
+          for (int i = 0; i < predict_target_list.size(); ++i){
+            nav_msgs::Odometry odom_for_control;
+            odom_for_control.pose.pose.position.x = predict_target_list[i](0);
+            odom_for_control.pose.pose.position.y = predict_target_list[i](1);
+            odom_for_control.pose.pose.position.z = m_altitude_fixed;
+            odom_for_control.pose.pose.orientation.w = 1.0;
 
-          odom_for_control.twist.twist.linear.x = predict_target_list[m_target_predict_seg](3);
-          odom_for_control.twist.twist.linear.y = predict_target_list[m_target_predict_seg](4);
-          odom_for_control.twist.twist.linear.z = predict_target_list[m_target_predict_seg](5);
-          
-          m_goal_pose_pub.publish(odom_for_control);
+            odom_for_control.twist.twist.linear.x = predict_target_list[i](3);
+            odom_for_control.twist.twist.linear.y = predict_target_list[i](4);
+            odom_for_control.twist.twist.linear.z = predict_target_list[i](5);
+            pub_odom_array.array.push_back(odom_for_control);
+          }
+          m_goal_traj_pub.publish(pub_odom_array);
         } 
       }
     }

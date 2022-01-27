@@ -24,6 +24,7 @@
 #include <yolo_ros_simple/bbox.h>
 #include <yolo_ros_simple/bboxes.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <ieee_uav/odom_array.h>
 
 #include <pcl/point_types.h>
 #include <pcl/PCLPointCloud2.h>
@@ -54,7 +55,7 @@ private:
   ros::NodeHandle nh;
   ros::Subscriber m_tf_sub;
   ros::Subscriber m_gt_sub;
-  ros::Publisher m_goal_pose_pub;
+  ros::Publisher m_goal_traj_pub;
   ros::Publisher m_detected_target_pcl_pub;
 
   std::string m_depth_topic, m_depth_base, m_body_base, m_fixed_frame, m_bbox_out_topic;

@@ -26,7 +26,7 @@ ieee_uav_class::ieee_uav_class(ros::NodeHandle& n) : nh(n)
   m_sub_DepBsynced.registerCallback(&ieee_uav_class::depb_callback,this);
 
   m_detected_target_pcl_pub = nh.advertise<sensor_msgs::PointCloud2>("/detected_target_pcl", 10);
-  m_goal_pose_pub = nh.advertise<nav_msgs::Odometry>("/goal_pose", 10);
+  m_goal_traj_pub = nh.advertise<ieee_uav::odom_array>("/goal_pose", 10);
 
   ROS_WARN("Class heritated, starting node...");
 }

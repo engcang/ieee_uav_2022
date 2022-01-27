@@ -13,7 +13,7 @@
   <param name="/f_x" value="319.99"/>
   <param name="/f_y" value="319.99"/>
 
-  <param name="/pcl_max_range" value="12.0"/>
+  <param name="/pcl_max_range" value="20.0"/>
   <param name="/depth_topic" value="/d435i/depth/image_raw"/>
   
   <param name="/depth_base" value="d435i/depth_camera_link"/>
@@ -24,7 +24,7 @@
   <param name="/target_traj_hz" value="12.0"/>
   <param name="/traj_leng" value="30"/>
   <param name="/traj_leng_past" value="300"/>
-  <param name="/target_predict_seg" value="10"/>
+  <param name="/target_predict_seg" value="5"/>
 
   <!-- Nodes  -->
 

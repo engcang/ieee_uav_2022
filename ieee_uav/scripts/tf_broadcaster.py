@@ -28,7 +28,8 @@ class caster():
         self.br.sendTransform((msg.pose.position.x, msg.pose.position.y, msg.pose.position.z),\
 (msg.pose.orientation.x,msg.pose.orientation.y,msg.pose.orientation.z, msg.pose.orientation.w),\
 stamp_ ,self.body_link_name,"map")
-        self.br.sendTransform((0.1, 0.0, -0.05), (0.5,-0.5,0.5,-0.5), stamp_ , self.camera_link_name, self.body_link_name)
+        # self.br.sendTransform((0.1, 0.0, -0.05), (0.5,-0.5,0.5,-0.5), stamp_ , self.camera_link_name, self.body_link_name)
+        self.br.sendTransform((0.1, 0.0, -0.05), (-0.6123724, 0.6123724, -0.3535534, 0.3535534), stamp_ , self.camera_link_name, self.body_link_name)
         return
 
 if __name__ == '__main__':
