@@ -63,18 +63,20 @@ $ catkin build -DCMAKE_BUILD_TYPE=Release
 	```
 	$ sudo apt-get install gfortran
 	$ sudo apt-get install doxygen
+        $ sudo apt install texlive-latex-base
 	```
 	+ Install `ma27` and type below commands in MA27's folder.
 	```
 	$ cd ma27-1.0.0
-	$ ./configure
+        $ mkdir build
+        $ cd build
+        $ ../configure
 	$ make
 	$ sudo make install
 	```
 	+ Install `OOQP` and type below commands in OOQP's folder.
 	```
-	$ cd OOQP
-	$ sudo apt install texlive-latex-base
+        $ cd OOQP
 	$ ./configure
 	$ make 
 	$ sudo make install
