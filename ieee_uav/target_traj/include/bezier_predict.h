@@ -13,7 +13,7 @@
 #include <ooqp/GondzioSolver.h>
 #include <ooqp/QpGenSparseMa27.h>
 
-#define _MAX_SEG 30 
+#define _MAX_SEG 10 
 #define _PREDICT_SEG  10
 #define _TIME_INTERVAL 0.05 
 #define Lambda_ACC  1.5     

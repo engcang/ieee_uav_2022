@@ -50,7 +50,7 @@ class mpc_ctrl():
         self.drone_name = rospy.get_param("/drone_name", "iris")
         self.altitude_fixed = rospy.get_param("/altitude_fixed", 0.3)
         self.pose_sub = rospy.Subscriber('/gazebo/model_states', ModelStates, self.pose_cb)
-        self.target_pose_sub = rospy.Subscriber('/goal_pose', odom_array, self.target_pose_cb)
+        # self.target_pose_sub = rospy.Subscriber('/goal_pose', odom_array, self.target_pose_cb)
         self.bbox_sub = rospy.Subscriber('/bboxes', bboxes, self.bbox_cb)
         self.control_pub = rospy.Publisher('/mavros/setpoint_velocity/cmd_vel', TwistStamped, queue_size=2)
         
@@ -81,9 +81,9 @@ class mpc_ctrl():
         self.u = np.zeros(self.horizon*self.num_inputs)
 
         self.position_weight = 5.0
-        self.velocity_weight = 2.5
-        self.input_weight = 1.5
-        self.input_smoothness_weight = 2.0
+        self.velocity_weight = 2.0
+        self.input_weight = 1.0
+        self.input_smoothness_weight = 1.5
 
     def pose_cb(self, msg):
         for i in range(len(msg.name)):
@@ -97,26 +97,35 @@ class mpc_ctrl():
                 _, _, self.curr_yaw = euler_from_quaternion([msg.pose[i].orientation.x, msg.pose[i].orientation.y, msg.pose[i].orientation.z, msg.pose[i].orientation.w])
                 self.current_state = np.array([curr_x, curr_y, curr_z, curr_vx, curr_vy, curr_vz])
                 self.pose_in = True
+            elif msg.name[i]=="rover_moving":
+                ref_x = msg.pose[i].position.x
+                ref_y = msg.pose[i].position.y
+                ref_z = 0.9
+                ref_vx = msg.twist[i].linear.x
+                ref_vy = msg.twist[i].linear.y
+                ref_vz = msg.twist[i].linear.z
+                self.goal_ref = np.array([ref_x, ref_y, ref_z, ref_vx, ref_vy, ref_vz])
+                self.goal_in = True
         return
 
     def target_pose_cb(self, msg):
-        ref_list = []
-        for i in range(len(msg.array)):
-            ref_x = msg.array[i].pose.pose.position.x
-            ref_y = msg.array[i].pose.pose.position.y
-            ref_z = 0.9
-            ref_vx = msg.array[i].twist.twist.linear.x
-            ref_vy = msg.array[i].twist.twist.linear.y
-            ref_vz = msg.array[i].twist.twist.linear.z
-            ref_list.append([ref_x, ref_y, ref_z, ref_vx, ref_vy, ref_vz])
-        self.goal_ref = np.array(ref_list)
-        self.goal_in = True
+        # ref_list = []
+        # for i in range(len(msg.array)):
+        #     ref_x = msg.array[i].pose.pose.position.x
+        #     ref_y = msg.array[i].pose.pose.position.y
+        #     ref_z = 0.9
+        #     ref_vx = msg.array[i].twist.twist.linear.x
+        #     ref_vy = msg.array[i].twist.twist.linear.y
+        #     ref_vz = msg.array[i].twist.twist.linear.z
+        #     ref_list.append([ref_x, ref_y, ref_z, ref_vx, ref_vy, ref_vz])
+        # self.goal_ref = np.array(ref_list)
+        # self.goal_in = True
         return
 
 
     def cost_function(self, u, *args):
         curr_state = args[0]
-        ref = args[1][0] #seg
+        ref = args[1]
         cost = 0.0
         for i in range(self.horizon):
             prev_state = curr_state
@@ -125,22 +134,6 @@ class mpc_ctrl():
             distance = pow(curr_state[0]-ref[0], 2) + pow(curr_state[1]-ref[1], 2)
             cost += self.position_weight * distance
             cost += self.velocity_weight * ( pow(curr_state[3]-ref[3], 2) + pow(curr_state[4]-ref[4], 2) )
-            # if distance > 2.5:
-                # tracking cost
-                # cost += self.position_weight * distance
-                # velocity tracking cost
-                # cost += self.velocity_weight * ( pow(curr_state[3]-ref[3], 2) + pow(curr_state[4]-ref[4], 2) )
-            # elif distance > 1.5:
-            #     # tracking cost
-            #     cost += self.position_weight *0.7 * (distance-1.5)
-            #     # velocity tracking cost
-            #     cost += self.velocity_weight *1.5 * ( pow(curr_state[3]-ref[3], 2) + pow(curr_state[4]-ref[4], 2) )
-            # else:
-                # tracking cost
-                # cost += self.position_weight * 0.3 * distance
-                # velocity tracking cost
-                # cost += self.velocity_weight * ( pow(curr_state[3]-ref[3], 2) + pow(curr_state[4]-ref[4], 2) )
-
             cost += self.position_weight * pow(curr_state[2]-ref[2], 2)
 
             #input cost
@@ -183,7 +176,7 @@ class mpc_ctrl():
 if __name__ == '__main__':
     mpc_ = mpc_ctrl()
     time.sleep(0.2)
-    _C_ = 0.15
+
     while 1:
         try:
             if mpc_.pose_in and mpc_.goal_in:
@@ -204,22 +197,18 @@ if __name__ == '__main__':
 
                 solved_input = TwistStamped()
                 solved_input.header.stamp = rospy.Time.now()
+                solved_input.twist.linear.x = u_solution.x[0]
+                solved_input.twist.linear.y = u_solution.x[1]
+                solved_input.twist.linear.z = u_solution.x[2]
 
-                target_forward_yaw = atan2(mpc_.goal_ref[-1][1]-mpc_.goal_ref[0][1], mpc_.goal_ref[-1][0]-mpc_.goal_ref[0][0])
-                forward_facing_yaw = atan2(mpc_.goal_ref[0][1]-mpc_.current_state[1], mpc_.goal_ref[0][0]-mpc_.current_state[0])
+                forward_facing_yaw = atan2(mpc_.goal_ref[1]-mpc_.current_state[1], mpc_.goal_ref[0]-mpc_.current_state[0])
                 if mpc_.bbox_in:
                     # solved_input.twist.angular.z = rpy_saturation(forward_facing_yaw - mpc_.curr_yaw)
                     # solved_input.twist.angular.z = mpc_.ibvs_yaw
-                    solved_input.twist.angular.z = sign(mpc_.ibvs_yaw) * _C_*pow(abs(mpc_.ibvs_yaw)/_C_, 1.5)
+                    # solved_input.twist.angular.z = sign(mpc_.ibvs_yaw) * 0.15*pow(abs(mpc_.ibvs_yaw)/0.15, 1.5)
+                    solved_input.twist.angular.z = forward_facing_yaw - mpc_.curr_yaw
                     # print(mpc_.ibvs_yaw, mpc_.ibvs_yaw*180/np.pi)
-                if abs(mpc_.ibvs_yaw) > _C_:
-                    solved_input.twist.linear.x = u_solution.x[0] * abs(solved_input.twist.angular.z)/abs(mpc_.ibvs_yaw)
-                    solved_input.twist.linear.y = u_solution.x[1] * abs(solved_input.twist.angular.z)/abs(mpc_.ibvs_yaw)
-                else:
-                    solved_input.twist.linear.x = u_solution.x[0]
-                    solved_input.twist.linear.y = u_solution.x[1]
-                solved_input.twist.linear.z = u_solution.x[2]
-
+                
                 mpc_.control_pub.publish(solved_input)
 
                 toc = time.time()

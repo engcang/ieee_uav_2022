@@ -21,7 +21,7 @@
   <param name="/fixed_frame" value="map"/>
 
   <!-- For target prediction -->
-  <param name="/target_traj_hz" value="12.0"/>
+  <param name="/target_traj_hz" value="30.0"/>
   <param name="/traj_leng" value="30"/>
   <param name="/traj_leng_past" value="300"/>
   <param name="/target_predict_seg" value="5"/>
