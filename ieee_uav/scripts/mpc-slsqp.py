@@ -81,7 +81,7 @@ class mpc_ctrl():
         self.u = np.zeros(self.horizon*self.num_inputs)
 
         self.position_weight = 3.0
-        self.velocity_weight = 3.0
+        self.velocity_weight = 2.5
         self.input_weight = 1.5
         self.input_smoothness_weight = 2.0
 
@@ -123,19 +123,21 @@ class mpc_ctrl():
             curr_state = self.plant(prev_state, self.dt, u[i*self.num_inputs], u[i*self.num_inputs+1], u[i*self.num_inputs+2])
 
             distance = pow(curr_state[0]-ref[0], 2) + pow(curr_state[1]-ref[1], 2)
-            if distance > 3.0:
-                # tracking cost
-                cost += self.position_weight *1.5 * (distance-2.5)
-                # velocity tracking cost
-                cost += self.velocity_weight * ( pow(curr_state[3]-ref[3], 2) + pow(curr_state[4]-ref[4], 2) )
-            elif distance > 2.5:
-                # tracking cost
-                cost += self.position_weight *0.7 * (distance-3.0)
-                # velocity tracking cost
-                cost += self.velocity_weight *1.5 * ( pow(curr_state[3]-ref[3], 2) + pow(curr_state[4]-ref[4], 2) )
-            else:
-                # velocity tracking cost
-                cost += self.velocity_weight * ( pow(curr_state[3]-ref[3], 2) + pow(curr_state[4]-ref[4], 2) )
+            cost += self.position_weight * distance
+            cost += self.velocity_weight * ( pow(curr_state[3]-ref[3], 2) + pow(curr_state[4]-ref[4], 2) )
+            # if distance > 2.2:
+            #     # tracking cost
+            #     cost += self.position_weight *1.5 * (distance-1.5)
+            #     # velocity tracking cost
+            #     cost += self.velocity_weight * ( pow(curr_state[3]-ref[3], 2) + pow(curr_state[4]-ref[4], 2) )
+            # elif distance > 1.5:
+            #     # tracking cost
+            #     cost += self.position_weight *0.7 * (distance-1.5)
+            #     # velocity tracking cost
+            #     cost += self.velocity_weight *1.5 * ( pow(curr_state[3]-ref[3], 2) + pow(curr_state[4]-ref[4], 2) )
+            # else:
+            #     # velocity tracking cost
+            #     cost += self.velocity_weight * ( pow(curr_state[3]-ref[3], 2) + pow(curr_state[4]-ref[4], 2) )
 
             cost += self.position_weight * pow(curr_state[2]-ref[2], 2)
 
@@ -208,7 +210,9 @@ if __name__ == '__main__':
                 forward_facing_yaw = atan2(mpc_.goal_ref[0][1]-mpc_.current_state[1], mpc_.goal_ref[0][0]-mpc_.current_state[0])
                 if mpc_.bbox_in:
                     # solved_input.twist.angular.z = rpy_saturation(forward_facing_yaw - mpc_.curr_yaw)
-                    solved_input.twist.angular.z = mpc_.ibvs_yaw
+                    # solved_input.twist.angular.z = mpc_.ibvs_yaw
+                    solved_input.twist.angular.z = sign(mpc_.ibvs_yaw) * 0.15*pow(abs(mpc_.ibvs_yaw)/0.15, 1.5)
+                    # print(mpc_.ibvs_yaw, mpc_.ibvs_yaw*180/np.pi)
                 
                 mpc_.control_pub.publish(solved_input)
 

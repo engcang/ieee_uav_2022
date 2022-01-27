@@ -85,6 +85,8 @@ void ieee_uav_class::depb_callback(const sensor_msgs::ImageConstPtr& depthMsg,
             nav_msgs::Odometry odom_for_control;
             odom_for_control.pose.pose.position.x = predict_target_list[i](0);
             odom_for_control.pose.pose.position.y = predict_target_list[i](1);
+            // odom_for_control.pose.pose.position.x = center_after_tf(0);
+            // odom_for_control.pose.pose.position.y = center_after_tf(1);
             odom_for_control.pose.pose.position.z = m_altitude_fixed;
             odom_for_control.pose.pose.orientation.w = 1.0;
 
