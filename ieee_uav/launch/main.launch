@@ -3,9 +3,9 @@
 
   <!-- manual controller for Jackal -->
   <node name="joy_ros" pkg="joy" type="joy_node">
-      <param name="/dev" value="/dev/input/js1"/>
+      <param name="/dev" value="/dev/input/js0"/>
   </node>
-  <node name="ctrl_joy" pkg="px4" type="mavros_joy_controller.py"/>
+  <node name="ctrl_joy" pkg="ieee_uav" type="mavros_joy_controller.py"/>
 
   <param name="/altitude_fixed" value="0.8"/>
   <param name="/c_x" value="320.5"/>
