@@ -54,5 +54,5 @@ void ieee_uav_class::getParam()
   nh.param("/target_traj_hz", m_target_traj_hz, 12.0);
   nh.param("/traj_leng", m_traj_leng, 30);
   nh.param("/traj_leng_past", m_traj_leng_past, 300);
-  nh.param("/target_predict_seg", m_target_predict_seg, 10);
+  nh.param("/target_predict_seg", m_target_predict_seg, 1);
 }

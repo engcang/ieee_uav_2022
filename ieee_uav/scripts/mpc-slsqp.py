@@ -8,6 +8,8 @@ import rospy
 from tf.transformations import euler_from_quaternion
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import TwistStamped
+from mavros_msgs.srv import SetMode, CommandBool
+from mavros_msgs.msg import State
 from gazebo_msgs.msg import ModelStates
 from yolo_ros_simple.msg import bboxes
 from ieee_uav.msg import odom_array
@@ -49,16 +51,20 @@ class mpc_ctrl():
         rospy.init_node('mpc_controlelr', anonymous=True)
         self.drone_name = rospy.get_param("/drone_name", "iris")
         self.altitude_fixed = rospy.get_param("/altitude_fixed", 0.3)
+        self.uav_state_sub = rospy.Subscriber('/mavros/state', State, self.uav_state_cb)
         self.pose_sub = rospy.Subscriber('/gazebo/model_states', ModelStates, self.pose_cb)
         self.target_pose_sub = rospy.Subscriber('/goal_pose', odom_array, self.target_pose_cb)
         self.bbox_sub = rospy.Subscriber('/bboxes', bboxes, self.bbox_cb)
         self.control_pub = rospy.Publisher('/mavros/setpoint_velocity/cmd_vel', TwistStamped, queue_size=2)
+        self.arming = rospy.ServiceProxy('/mavros/cmd/arming', CommandBool)
+        self.offboarding = rospy.ServiceProxy('/mavros/set_mode', SetMode)
         
         self.rate = rospy.Rate(15)
 
         self.pose_in = False
         self.goal_in = False
         self.bbox_in = False
+        self.state_in= False        
 
         ### MPC setup
         self.horizon = 10
@@ -84,6 +90,18 @@ class mpc_ctrl():
         self.velocity_weight = 2.5
         self.input_weight = 1.5
         self.input_smoothness_weight = 2.0
+
+
+    def uav_state_cb(self, msg):
+        self.state=msg
+        self.state_in=True        
+        return
+        
+    def bbox_cb(self, msg):
+        if len(msg.bboxes)>0:
+            box=msg.bboxes[0]
+            self.ibvs_yaw = (320.0- (2*box.x+box.width)/2.0) / 640.0*1.5708
+            self.bbox_in=True
 
     def pose_cb(self, msg):
         for i in range(len(msg.name)):
@@ -172,11 +190,6 @@ class mpc_ctrl():
         vz_t_1 = vz
         return [x_t_1, y_t_1, z_t_1, vx_t_1, vy_t_1, vz_t_1]
 
-    def bbox_cb(self, msg):
-        if len(msg.bboxes)>0:
-            box=msg.bboxes[0]
-            self.ibvs_yaw = (320.0- (2*box.x+box.width)/2.0) / 640.0*1.5708
-            self.bbox_in=True
 
 
 #######################################################################
@@ -184,8 +197,28 @@ if __name__ == '__main__':
     mpc_ = mpc_ctrl()
     time.sleep(0.2)
     _C_ = 0.15
+    initialized=False
     while 1:
         try:
+            if mpc_.state_in and not initialized:
+                if not mpc_.state.armed:
+                    mpc_.arming(True)
+                    continue
+                else:
+                    take_off_input = TwistStamped()
+                    take_off_input.header.stamp = rospy.Time.now()
+                    take_off_input.twist.linear.z = 1.0
+                    mpc_.control_pub.publish(take_off_input)
+                if mpc_.state.mode != "OFFBOARD":
+                    mpc_.offboarding(base_mode=0, custom_mode="OFFBOARD")
+                else:
+                    if mpc_.pose_in:
+                        if mpc_.current_state[2]>1.0:
+                            initialized=True
+
+                time.sleep(0.03)
+                continue
+
             if mpc_.pose_in and mpc_.goal_in:
 
                 ### mpc start
