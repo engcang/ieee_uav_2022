@@ -75,6 +75,7 @@ if __name__=='__main__':
     COLORS = [(0, 255, 0), (255, 255, 0), (0, 255, 0), (255, 0, 0)]
     avg_FPS=0; count=0; total_fps=0;
     cyr=cv_yolo_ros()
+    print("Start operating YOLO!")
     while 1:
         try:
             if cyr.flag:
@@ -98,6 +99,7 @@ if __name__=='__main__':
                     out_box.y = box[1]
                     out_box.width = box[2]
                     out_box.height = box[3]
+                    out_box.crop = cyr.bridge.cv2_to_imgmsg(frame[box[1]:box[1]+box[3], box[0]:box[0]+box[2], :], "bgr8")
                     out_box.id = classid[0]
                     out_box.Class = cyr.class_names[classid[0]]
                     out_boxes.bboxes.append(out_box)

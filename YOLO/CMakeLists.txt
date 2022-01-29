@@ -4,8 +4,9 @@ project(yolo_ros_simple)
 find_package(catkin REQUIRED COMPONENTS
 	rospy
 	std_msgs
-  message_generation
-  message_runtime
+	message_generation
+	message_runtime
+    sensor_msgs
 )
 
 add_message_files(
@@ -17,6 +18,7 @@ add_message_files(
 generate_messages(
   DEPENDENCIES
     std_msgs
+	sensor_msgs
 )
 
 include_directories(
