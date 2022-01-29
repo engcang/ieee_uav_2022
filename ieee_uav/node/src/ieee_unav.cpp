@@ -27,6 +27,9 @@ ieee_uav_class::ieee_uav_class(ros::NodeHandle& n) : nh(n)
 
   m_detected_target_pcl_pub = nh.advertise<sensor_msgs::PointCloud2>("/detected_target_pcl", 10);
   m_goal_traj_pub = nh.advertise<ieee_uav::odom_array>("/goal_pose", 10);
+  
+  image_transport::ImageTransport it(n);
+  m_mask_pub = it.advertise("/binary_image", 10);
 
   ROS_WARN("Class heritated, starting node...");
 }
@@ -50,7 +53,8 @@ void ieee_uav_class::getParam()
   nh.param<std::string>("/depth_base", m_depth_base, "camera_link");
   nh.param<std::string>("/body_base", m_body_base, "body_base");
   nh.param<std::string>("/fixed_frame", m_fixed_frame, "map");
-  
+  nh.param<std::string>("/color_extraction/mode", m_color_extraction_mode, "red"); // "red", "white", and "both"
+  nh.param("/color_extraction/white_color_sensitivity", m_white_color_sensitivity, 30);
   nh.param("/target_traj_hz", m_target_traj_hz, 12.0);
   nh.param("/traj_leng", m_traj_leng, 30);
   nh.param("/traj_leng_past", m_traj_leng_past, 300);

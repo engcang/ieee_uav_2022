@@ -36,11 +36,12 @@
 #include <opencv2/highgui.hpp>
 #include <cv_bridge/cv_bridge.h>
 
-
 #include <message_filters/subscriber.h>
 #include <message_filters/time_synchronizer.h>
 //#include <message_filters/sync_policies/exact_time.h>
 #include <message_filters/sync_policies/approximate_time.h>
+
+#include <image_transport/image_transport.h>
 
 using namespace std;
 using namespace std::chrono; 
@@ -57,10 +58,15 @@ private:
   ros::Subscriber m_gt_sub;
   ros::Publisher m_goal_traj_pub;
   ros::Publisher m_detected_target_pcl_pub;
+  
+  image_transport::Publisher m_mask_pub;
 
   std::string m_depth_topic, m_depth_base, m_body_base, m_fixed_frame, m_bbox_out_topic;
   bool m_bbox_check=false, m_depth_check=false, m_gt_check=false, m_body_t_cam_check=false;
 
+  ///// for color extraction
+  std::string m_color_extraction_mode; 
+  int m_white_color_sensitivity;
   ///// for yolo and pcl
   cv_bridge::CvImagePtr m_depth_ptr;
   double m_scale_factor;
@@ -86,6 +92,7 @@ private:
   void tf_callback(const tf2_msgs::TFMessage::ConstPtr& msg);
   void gt_callback(const gazebo_msgs::ModelStates::ConstPtr& msg);
 
+  int get_hsv_mask(const cv::Mat& hsv_img, cv::Mat& mask, const string& mode, const uchar sensitivity);
 public:
   ieee_uav_class(ros::NodeHandle& n);
   ~ieee_uav_class();
