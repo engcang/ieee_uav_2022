@@ -19,6 +19,14 @@
   <param name="/depth_base" value="d435i/depth_camera_link"/>
   <param name="/body_base" value="base_link"/>
   <param name="/fixed_frame" value="map"/>
+  
+  <!-- For color-based mask mode: "red", "white", and "both" -->
+  <param name="/color_extraction/mode" value="both"/>
+  <param name="/color_extraction/verbose" value="false"/>
+  <param name="/color_extraction/erosion_adaptive_size" value="49"/>
+  <param name="/color_extraction/erosion_small_kernel_size" value="3"/>
+  <param name="/color_extraction/erosion_large_kernel_size" value="5"/>
+  <param name="/color_extraction/sensitivity" value="40"/>
 
   <!-- For target prediction -->
   <param name="/target_traj_hz" value="30.0"/>
