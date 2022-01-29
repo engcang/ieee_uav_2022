@@ -38,9 +38,9 @@ void ieee_uav_class::depb_callback(const sensor_msgs::ImageConstPtr& depthMsg,
   
   cv::Mat hsv_img, color_mask;
   cv::cvtColor(cv_ptr->image, hsv_img, cv::COLOR_BGR2HSV);
-  int num_nonzero = get_hsv_mask(hsv_img, color_mask, m_color_extraction_mode, m_white_color_sensitivity);
+  int num_nonzero = get_hsv_mask(hsv_img, color_mask, m_color_params);
   // ToDo. What if num_nonzero == 0?
-  cout << "Total: " << num_nonzero << endl;
+  if (m_color_params.verbose) { cout << "Total # of non-zero: " << num_nonzero << endl; }
 
   if (m_depth_check){
     pcl::PointXYZ p3d, p3d_center;
@@ -75,8 +75,7 @@ void ieee_uav_class::depb_callback(const sensor_msgs::ImageConstPtr& depthMsg,
         }
       }
     }
-    cout << "Total " << pcl_size << " pts exist" << endl;
-    if (pcl_size>0){
+    if (pcl_size > 0){
       p3d_center.x /= (float)pcl_size;
       p3d_center.y /= (float)pcl_size;
       p3d_center.z /= (float)pcl_size;
@@ -121,28 +120,41 @@ void ieee_uav_class::depb_callback(const sensor_msgs::ImageConstPtr& depthMsg,
   }
 }
 
-int ieee_uav_class::get_hsv_mask(const cv::Mat& hsv_img, cv::Mat& mask, const string& mode, const uchar sensitivity) {
-  cv::Mat red_mask, white_mask;
+int ieee_uav_class::get_hsv_mask(const cv::Mat& hsv_img, cv::Mat& mask, const color_extraction_params& params) {
+  if (params.verbose) { cout << "Curr. size - h: " << hsv_img.rows << ", w: " << hsv_img.cols << endl; }
+  int min_size = min(hsv_img.cols, hsv_img.rows);
   // Color extraction
-  if (mode == "red" || mode == "both") {
+  cv::Mat red_mask, white_mask;
+  if (params.mode == "red" || params.mode == "both") {
     // Extract red color regions
     // https://stackoverflow.com/questions/32522989/opencv-better-detection-of-red-color
     cv::Mat tmp_mask1, tmp_mask2;
     inRange(hsv_img, cv::Scalar(0, 70, 50), cv::Scalar(10, 255, 255), tmp_mask1);
     inRange(hsv_img, cv::Scalar(170, 70, 50), cv::Scalar(180, 255, 255), tmp_mask2);
     cv::bitwise_or(tmp_mask1, tmp_mask2, red_mask);
+    
+    // Erosion kernel size is changed in an adaptive way
+    int k_size;
+    if (min_size < m_color_params.erosion_adaptive_size) {
+      k_size = params.erosion_small_kernel_size;
+    } else {
+      k_size = params.erosion_large_kernel_size;
+    }
+    if (params.verbose) { cout << min_size << " => kernel size is set to " << k_size << endl; }
+    cv::erode(red_mask, red_mask, cv::Mat::ones(cv::Size(k_size, k_size), CV_8UC1), cv::Point(-1,-1), 2);
   } 
-  if (mode == "white" || mode == "both") {
+
+  if (params.mode == "white" || params.mode == "both") {
     // https://stackoverflow.com/questions/22588146/tracking-white-color-using-python-opencv
-    inRange(hsv_img, cv::Scalar(0, 0, 255-sensitivity), cv::Scalar(255, sensitivity, 255), white_mask);
+    inRange(hsv_img, cv::Scalar(0, 0, 255 - params.sensitivity), cv::Scalar(255, params.sensitivity, 255), white_mask);
   }	
 
   // Selection of corresponding mask
-  if (mode == "red") {
+  if (params.mode == "red") {
     mask = red_mask;
-  } else if (mode == "white") { 
+  } else if (params.mode == "white") { 
     mask = white_mask;
-  } else if (mode == "both") { 
+  } else if (params.mode == "both") { 
     cv::bitwise_or(red_mask, white_mask, mask);
   } else { throw invalid_argument("Not implemented!"); }
   return cv::countNonZero(mask);

@@ -53,8 +53,16 @@ void ieee_uav_class::getParam()
   nh.param<std::string>("/depth_base", m_depth_base, "camera_link");
   nh.param<std::string>("/body_base", m_body_base, "body_base");
   nh.param<std::string>("/fixed_frame", m_fixed_frame, "map");
-  nh.param<std::string>("/color_extraction/mode", m_color_extraction_mode, "red"); // "red", "white", and "both"
-  nh.param("/color_extraction/white_color_sensitivity", m_white_color_sensitivity, 30);
+
+  nh.param<std::string>("/color_extraction/mode", m_color_params.mode, "red"); // "red", "white", and "both"
+  nh.param<bool>("/color_extraction/verbose", m_color_params.verbose, false); 
+  nh.param("/color_extraction/erosion_adaptive_size", m_color_params.erosion_adaptive_size, 50);
+  nh.param("/color_extraction/erosion_small_kernel_size", m_color_params.erosion_small_kernel_size, 3);
+  nh.param("/color_extraction/erosion_large_kernel_size", m_color_params.erosion_large_kernel_size, 5);
+  nh.param("/color_extraction/sensitivity_adaptive_size", m_color_params.sensitivity_adaptive_size, 15); // Currently, not in use
+  nh.param("/color_extraction/sensitivity", m_color_params.sensitivity, 40);
+  nh.param<float>("/color_extraction/sensitivity_ratio", m_color_params.sensitivity_ratio, 1.5); // Currently, not in use
+
   nh.param("/target_traj_hz", m_target_traj_hz, 12.0);
   nh.param("/traj_leng", m_traj_leng, 30);
   nh.param("/traj_leng_past", m_traj_leng_past, 300);

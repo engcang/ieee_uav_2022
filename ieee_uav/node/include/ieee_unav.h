@@ -49,6 +49,19 @@ using namespace Eigen;
 
 typedef message_filters::sync_policies::ExactTime<sensor_msgs::Image, yolo_ros_simple::bboxes> db_sync_pol;
 
+struct color_extraction_params { 
+  std::string mode; 
+  bool        verbose; 
+
+  int         erosion_adaptive_size;
+  int         erosion_small_kernel_size;
+  int         erosion_large_kernel_size;
+
+  int         sensitivity_adaptive_size;
+  int         sensitivity;
+  float       sensitivity_ratio;
+};
+
 class ieee_uav_class{
 private:
 
@@ -65,8 +78,8 @@ private:
   bool m_bbox_check=false, m_depth_check=false, m_gt_check=false, m_body_t_cam_check=false;
 
   ///// for color extraction
-  std::string m_color_extraction_mode; 
-  int m_white_color_sensitivity;
+  color_extraction_params m_color_params;
+
   ///// for yolo and pcl
   cv_bridge::CvImagePtr m_depth_ptr;
   double m_scale_factor;
@@ -92,7 +105,7 @@ private:
   void tf_callback(const tf2_msgs::TFMessage::ConstPtr& msg);
   void gt_callback(const gazebo_msgs::ModelStates::ConstPtr& msg);
 
-  int get_hsv_mask(const cv::Mat& hsv_img, cv::Mat& mask, const string& mode, const uchar sensitivity);
+  int get_hsv_mask(const cv::Mat& hsv_img, cv::Mat& mask, const color_extraction_params& params);
 public:
   ieee_uav_class(ros::NodeHandle& n);
   ~ieee_uav_class();
