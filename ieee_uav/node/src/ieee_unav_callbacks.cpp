@@ -79,6 +79,12 @@ void ieee_uav_class::depb_callback(const sensor_msgs::ImageConstPtr& depthMsg,
       p3d_center.x /= (float)pcl_size;
       p3d_center.y /= (float)pcl_size;
       p3d_center.z /= (float)pcl_size;
+      
+      if (m_gt_check) {
+        pcl::PointXYZ p3d_center_compensated;
+        compensate_motion(p3d_center, p3d_center_compensated, bboxMsg->header.stamp.toSec());
+        p3d_center = p3d_center_compensated;
+      }
 
       pcl::PointCloud<pcl::PointXYZ>::Ptr detected_center_pub(new pcl::PointCloud<pcl::PointXYZ>());
       detected_center_pub->push_back( pcl::PointXYZ(p3d_center.x, p3d_center.y, p3d_center.z) );
@@ -161,11 +167,12 @@ int ieee_uav_class::get_hsv_mask(const cv::Mat& hsv_img, cv::Mat& mask, const co
 }
 
 void ieee_uav_class::gt_callback(const gazebo_msgs::ModelStates::ConstPtr& msg){
+  double time_sec = 0;
   for (int i = 0; i < msg->pose.size(); ++i){
     if (msg->name[i] == "iris"){
       tf::Quaternion q(msg->pose[i].orientation.x, msg->pose[i].orientation.y, msg->pose[i].orientation.z, msg->pose[i].orientation.w);
       tf::Matrix3x3 m(q);
-
+  
       m_map_t_body(0,0) = m[0][0];
       m_map_t_body(0,1) = m[0][1];
       m_map_t_body(0,2) = m[0][2];
@@ -185,12 +192,59 @@ void ieee_uav_class::gt_callback(const gazebo_msgs::ModelStates::ConstPtr& msg){
       m_cvt_quat_y = q.getY();
       m_cvt_quat_z = q.getZ();
       m_cvt_quat_w = q.getW();
+      
+      // ToDo. gazebo_msgs::ModelStates doesn't provide timestamp...
+      time_sec = ros::Time::now().toSec();
     }
   }
   if (m_body_t_cam_check){
     m_gt_check = true;
     m_map_t_cam = m_map_t_body * m_body_t_cam;
+    
+    m_map_t_cam_poses.push_back({time_sec, m_map_t_cam}); 
+    while (m_map_t_cam_poses.size() > MAX_QUEUE_SIZE) { 
+      m_map_t_cam_poses.pop_front();
+    }
   }
+}
+
+void ieee_uav_class::compensate_motion(const pcl::PointXYZ& pt, pcl::PointXYZ& update, double t, bool verbose) {
+  if (verbose) { cout << " ===== Motion Compensation start =====" << endl; }
+  if (m_map_t_cam_poses.size() < 2) {
+    update = pt;   
+    return;
+  }
+  if (t < m_map_t_cam_poses[0].first) {
+      update = pt;   
+    return;
+  }
+  
+  double ratio = 1.0; // For defensive programming
+  while (m_map_t_cam_poses.size() > 2) {
+    double t0 = m_map_t_cam_poses[0].first;
+    double t1 = m_map_t_cam_poses[1].first; 
+    if (t0 < t && t < t1) {
+      ratio = (t - t0) / (t1 - t0);
+      break; 
+    } else {
+      m_map_t_cam_poses.pop_front();
+    } 
+  }
+  if (verbose) { cout << "Ratio: " << ratio << " || Queue size: " << m_map_t_cam_poses.size() << endl; }
+  geometry_msgs::Pose p0 = eigen2geoPose(m_map_t_cam_poses[0].second);
+  geometry_msgs::Pose p1 = eigen2geoPose(m_map_t_cam_poses[1].second);
+
+  geometry_msgs::Pose p_interp = interpolate(p0, p1, ratio); 
+  Matrix4f map_t_cam_interp = geoPose2eigen(p_interp);
+  
+  MatrixXf pt_h(4,1), pt_h_world(4,1), pt_h_updated(4,1);
+  pt_h << pt.x, pt.y, pt.z, 1.0;
+  pt_h_world = map_t_cam_interp * pt_h;
+  pt_h_updated = m_map_t_cam_poses.back().second.inverse() * pt_h_world;
+  
+  update.x = pt_h_updated(0, 0);
+  update.y = pt_h_updated(1, 0);
+  update.z = pt_h_updated(2, 0);
 }
 
 void ieee_uav_class::tf_callback(const tf2_msgs::TFMessage::ConstPtr& msg){

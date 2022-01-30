@@ -43,6 +43,10 @@
 
 #include <image_transport/image_transport.h>
 
+#include <deque>
+
+#define MAX_QUEUE_SIZE 2000 // It should be larger than (1 / FPS of YOLO) / (1 / Hz of pose)
+
 using namespace std;
 using namespace std::chrono; 
 using namespace Eigen;
@@ -64,7 +68,8 @@ struct color_extraction_params {
 
 class ieee_uav_class{
 private:
-
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  
   ///// ros and tf
   ros::NodeHandle nh;
   ros::Subscriber m_tf_sub;
@@ -72,6 +77,7 @@ private:
   ros::Publisher m_goal_traj_pub;
   ros::Publisher m_detected_target_pcl_pub;
   
+  deque<pair<double, Matrix4f> > m_map_t_cam_poses;
   image_transport::Publisher m_mask_pub;
 
   std::string m_depth_topic, m_depth_base, m_body_base, m_fixed_frame, m_bbox_out_topic;
@@ -106,6 +112,9 @@ private:
   void gt_callback(const gazebo_msgs::ModelStates::ConstPtr& msg);
 
   int get_hsv_mask(const cv::Mat& hsv_img, cv::Mat& mask, const color_extraction_params& params);
+  
+  void compensate_motion(const pcl::PointXYZ& pt, pcl::PointXYZ& update, double t, bool verbose=false);
+  
 public:
   ieee_uav_class(ros::NodeHandle& n);
   ~ieee_uav_class();
