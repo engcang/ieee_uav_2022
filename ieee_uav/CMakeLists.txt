@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   nav_msgs
   cv_bridge
+  image_transport
   pcl_conversions
   pcl_ros
   yolo_ros_simple
