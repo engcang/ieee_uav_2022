@@ -46,10 +46,10 @@
   <!-- YOLO -->
   <param name="/bbox_out_topic" value="/bboxes"/>
   <node name="yolo_ros_simple_node" pkg="yolo_ros_simple" type="ros_opencv_dnn.py" output="screen">
-    <param name="inference_rate" value="30"/>
+    <param name="inference_rate" value="15"/>
     <param name="img_in_topic" value="/d435i/depth/rgb_image_raw"/>
     <param name="img_out_topic" value="/detected"/>
-    <param name="confidence_threshold" value="0.4"/>
+    <param name="confidence_threshold" value="0.3"/>
     <param name="nms_threshold" value="0.4"/>
     <param name="class_file" value="$(find yolo_ros_simple)/scripts/obj.names"/>
     <param name="weight_file" value="$(find yolo_ros_simple)/scripts/yolov4-tiny-3l-uav_final.weights"/>

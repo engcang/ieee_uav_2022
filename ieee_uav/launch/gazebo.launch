@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
 
-    <arg name="x" default="-1.0"/> 
+    <arg name="x" default="0.0"/> 
     <arg name="y" default="0.0"/> 
     <arg name="z" default="0.4"/> 
     <arg name="R" default="0"/>

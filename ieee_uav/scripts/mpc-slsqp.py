@@ -243,7 +243,7 @@ if __name__ == '__main__':
                 if mpc_.bbox_in:
                     # solved_input.twist.angular.z = rpy_saturation(forward_facing_yaw - mpc_.curr_yaw)
                     # solved_input.twist.angular.z = mpc_.ibvs_yaw
-                    solved_input.twist.angular.z = sign(mpc_.ibvs_yaw) * _C_*pow(abs(mpc_.ibvs_yaw)/_C_, 1.5)
+                    solved_input.twist.angular.z = sign(mpc_.ibvs_yaw) * _C_*pow(abs(mpc_.ibvs_yaw)/_C_, 2.0)
                     # print(mpc_.ibvs_yaw, mpc_.ibvs_yaw*180/np.pi)
                 if abs(mpc_.ibvs_yaw) > _C_:
                     solved_input.twist.linear.x = u_solution.x[0] * abs(solved_input.twist.angular.z)/abs(mpc_.ibvs_yaw)
