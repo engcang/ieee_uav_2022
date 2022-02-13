@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
 
-    <arg name="x" default="0.0"/> 
+    <arg name="x" default="-9.5"/> 
     <arg name="y" default="0.0"/> 
     <arg name="z" default="0.4"/> 
     <arg name="R" default="0"/>
@@ -12,8 +12,11 @@
     <arg name="est" default="ekf2"/>
     <arg name="vehicle" default="iris"/>
     <arg name="sensor" default="iris_ieee"/>
-    <arg name="world" default="/home/mason/ws/uavcc-simulator/trial_2_setup/trial_2.world"/>
+    <arg name="world" default="$(find ieee_uav)/../trial_1.world"/>
     <arg name="sdf" default="$(find ieee_uav)/../drone_models/$(arg sensor)/$(arg sensor).sdf"/>
+     
+    <arg name="rover_sdf" default="$(find ieee_uav)/../uavcc-simulator/trial_1_setup/rover_moving_one/model.sdf"/>
+    <node name="$(anon vehicle_spawn)" pkg="gazebo_ros" type="spawn_model" output="screen" args="-sdf -file $(arg rover_sdf) -model rover_moving" launch-prefix="bash -c 'sleep 10; $0 $@' "/>
 
     <!-- gazebo configs -->
     <arg name="gui" default="true"/>

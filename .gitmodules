@@ -1,0 +1,3 @@
+[submodule "uavcc-simulator"]
+	path = uavcc-simulator
+	url = https://github.com/cam2-auto-drone/uavcc-simulator

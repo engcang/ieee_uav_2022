@@ -59,7 +59,7 @@ class mpc_ctrl():
         self.arming = rospy.ServiceProxy('/mavros/cmd/arming', CommandBool)
         self.offboarding = rospy.ServiceProxy('/mavros/set_mode', SetMode)
         
-        self.rate = rospy.Rate(15)
+        self.rate = rospy.Rate(30)
 
         self.pose_in = False
         self.goal_in = False
@@ -142,24 +142,8 @@ class mpc_ctrl():
 
             distance = pow(curr_state[0]-ref[0], 2) + pow(curr_state[1]-ref[1], 2)
             cost += self.position_weight * distance
-            cost += self.velocity_weight * ( pow(curr_state[3]-ref[3], 2) + pow(curr_state[4]-ref[4], 2) )
-            # if distance > 2.5:
-                # tracking cost
-                # cost += self.position_weight * distance
-                # velocity tracking cost
-                # cost += self.velocity_weight * ( pow(curr_state[3]-ref[3], 2) + pow(curr_state[4]-ref[4], 2) )
-            # elif distance > 1.5:
-            #     # tracking cost
-            #     cost += self.position_weight *0.7 * (distance-1.5)
-            #     # velocity tracking cost
-            #     cost += self.velocity_weight *1.5 * ( pow(curr_state[3]-ref[3], 2) + pow(curr_state[4]-ref[4], 2) )
-            # else:
-                # tracking cost
-                # cost += self.position_weight * 0.3 * distance
-                # velocity tracking cost
-                # cost += self.velocity_weight * ( pow(curr_state[3]-ref[3], 2) + pow(curr_state[4]-ref[4], 2) )
-
             cost += self.position_weight * pow(curr_state[2]-ref[2], 2)
+            cost += self.velocity_weight * ( pow(curr_state[3]-ref[3], 2) + pow(curr_state[4]-ref[4], 2) )
 
             #input cost
             cost += self.input_weight * pow(u[i*self.num_inputs], 2)
