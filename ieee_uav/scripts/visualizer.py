@@ -33,7 +33,7 @@ class path_pub():
         rospy.init_node('gt_path_pubb', anonymous=True)
         self.parent_frame_id = rospy.get_param("/parent_frame_id", 'map')
         self.append_rate = rospy.get_param("/append_rate", 5)
-        self.path_time = rospy.get_param("/path_time", 15)
+        self.path_time = rospy.get_param("/path_time", 60)
         self.robot_name = "iris"
         self.target_name = "rover_moving"
 
@@ -49,21 +49,39 @@ class path_pub():
         self.float_data = Float32()
 
         self.rate = rospy.Rate(self.append_rate)
+        self.f=open("/home/mason/data.csv", 'a')
 
     def gtcallback(self, msg):
         for i in range(len(msg.name)):
             if msg.name[i]==self.robot_name:
                 self.robot_pose = msg.pose[i]
+                self.robot_vel = msg.twist[i]
                 self.robot_check= 1
             elif msg.name[i]==self.target_name:
                 self.target_pose = msg.pose[i]
+                self.target_vel = msg.twist[i]
+                self.curr_t=rospy.Time.now().to_sec()
+                if self.target_check==0:
+                    self.target_pose_last = self.target_pose
+                    self.prev_t = self.curr_t-0.001
+                    self.Vtarget_prev = 0.0
                 self.target_check= 1
         if self.robot_check and self.target_check:
             self.float_data.data = sqrt(pow(self.robot_pose.position.x-self.target_pose.position.x, 2) + \
                                         pow(self.robot_pose.position.y-self.target_pose.position.y, 2) + \
                                         pow(self.robot_pose.position.z-self.target_pose.position.z, 2))
-            self.distance.publish(self.float_data)
+            VTarget = sqrt(pow(self.target_pose.position.x-self.target_pose_last.position.x, 2) + \
+                                        pow(self.target_pose.position.y-self.target_pose_last.position.y, 2) + \
+                                        pow(self.target_pose.position.z-self.target_pose_last.position.z, 2))
+            VTarget = VTarget/(self.curr_t-self.prev_t+0.001)
+            self.VTarget = self.Vtarget_prev * 0.9 + VTarget * 0.1
 
+            VUAV = sqrt(pow(self.robot_vel.linear.x, 2) + pow(self.robot_vel.linear.y, 2) + pow(self.robot_vel.linear.z, 2))
+            self.distance.publish(self.float_data)
+            self.f.write("%.2f, %.2f, %.2f, %.2f\n"%(self.curr_t, self.float_data.data, self.VTarget, VUAV)) #time, dist, Vtarget, Vuav
+            self.target_pose_last = self.target_pose
+            self.prev_t = self.curr_t
+            self.Vtarget_prev = self.VTarget
 
 ''' main '''
 path_pub_ = path_pub()
