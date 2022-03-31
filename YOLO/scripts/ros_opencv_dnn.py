@@ -94,17 +94,17 @@ if __name__=='__main__':
                 start_drawing = time.time()
                 for (classid, score, box) in zip(classes, scores, boxes):
                     out_box = bbox()
-                    out_box.score = score[0]
+                    out_box.score = score[0] # score
                     out_box.x = box[0]
                     out_box.y = box[1]
                     out_box.width = box[2]
                     out_box.height = box[3]
                     out_box.crop = cyr.bridge.cv2_to_imgmsg(frame[box[1]:box[1]+box[3], box[0]:box[0]+box[2], :], "bgr8")
-                    out_box.id = classid[0]
-                    out_box.Class = cyr.class_names[classid[0]]
+                    out_box.id = classid[0] # classid
+                    out_box.Class = cyr.class_names[classid[0]] # classid
                     out_boxes.bboxes.append(out_box)
                     color = COLORS[int(classid) % len(COLORS)]
-                    label = "%s : %f" % (cyr.class_names[classid[0]], score)
+                    label = "%s : %f" % (cyr.class_names[classid[0]], score) # classid
                     cv2.rectangle(frame, box, color, 5)
                     cv2.putText(frame, label, (box[0], box[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
                 end_drawing = time.time()
