@@ -1,5 +1,7 @@
 # IEEE UAV Competition 2022 - [link1](https://ri4rover.org/index.html), [link2](https://www.computer.org/publications/tech-news/events/uav-2022)
-IEEE UAV Competition 2022 - Low Power Computer Vision Challenges (LPCVC): Chase
++ IEEE UAV Competition 2022 - Low Power Computer Vision Challenges (LPCVC): Chase
++ E. Lee, D. Lee, H. Lim, S. Song, and H. Myung, "`Non-uniform motion target tracking system for UAVs`," Korea Robotics Society Conference (KRoC), 2022.
++ Video - https://youtu.be/zObqq5_M4UA
 
 
 <br>
@@ -155,3 +157,8 @@ $ roslaunch ieee_uav main.launch
 + Paths and debugging images should be visualized in `rviz`
 + `YOLO` detection should work at least at 100Hz, if you setup `CUDA`, `cuDNN`, `OpenCV`, and `cv_bridge` properly
   + Note, the inference can work upto at 100Hz purely, but it works at fixed 15Hz actually, considering limited computational resource of the UAV.
+
+### References
++ Targer motion prediction (Bezier curve) - [Fast Tracker](https://github.com/ZJU-FAST-Lab/Fast-tracker)
++ YOLO - [ROS code](https://github.com/engcang/ros-yolo-sort)
++ MPC - Googling...
